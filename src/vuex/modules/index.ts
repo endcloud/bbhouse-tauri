@@ -1,0 +1,5 @@
+export * from './home'
+export * from './dynamic'
+export * from './login'
+export * from './settings'
+export * from './video'

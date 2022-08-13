@@ -1,0 +1,111 @@
+{
+  "$schema": "../node_modules/@tauri-apps/cli/schema.json",
+  "build": {
+    "beforeBuildCommand": "yarn build",
+    "beforeDevCommand": "yarn dev",
+    "devPath": "http://127.0.0.1:13000",
+    "distDir": "../dist",
+    "withGlobalTauri": true
+  },
+  "package": {
+    "productName": "bbhouse-app",
+    "version": "1.0.3"
+  },
+  "tauri": {
+    "allowlist": {
+      "path": {
+        "all": true
+      },
+      "dialog": {
+        "all": true
+      },
+      "http": {
+        "all": true,
+        "scope": [
+          "https://*.bilibili.com/*",
+          "https://*.endcloud.cn/*"
+        ]
+      },
+      "window": {
+        "all": true
+      },
+      "shell": {
+        "sidecar": true,
+        "execute": true,
+        "open": "[\\s\\S]*",
+        "scope": [
+          { "name": "cmd", "args": true, "cmd": "cmd"},
+          { "name": "ps", "args": true,"cmd": "powershell"},
+          { "name": "node", "args": true,"cmd": "node"},
+          { "name": "commit", "args": true, "cmd": "git"},
+          { "name": "bb", "args": true,"cmd": "bbdown"},
+          { "name": "curl", "args": true,"cmd": "curl"},
+          { "name": "ls", "args": true,"cmd": "ls"}
+        ]
+      },
+      "fs": {
+        "all": true,
+        "scope": [
+          "$DESKTOP/*",
+          "$HOME/*",
+          "$LOCALDATA/*",
+          "$RESOURCE/*"
+        ]
+      }
+    },
+    "bundle": {
+      "active": true,
+      "category": "DeveloperTool",
+      "copyright": "",
+      "deb": {
+        "depends": []
+      },
+      "externalBin": [],
+      "icon": [
+        "icons/32x32.png",
+        "icons/bbhouse@1x.png",
+        "icons/bbhouse@2x.png",
+        "icons/bbhouse.icns",
+        "icons/bbhouse.ico"
+      ],
+      "identifier": "com.shizi.bbhouse",
+      "longDescription": "",
+      "macOS": {
+        "entitlements": null,
+        "exceptionDomain": "",
+        "frameworks": [],
+        "providerShortName": null,
+        "signingIdentity": null
+      },
+      "resources": [],
+      "shortDescription": "",
+      "targets": "all",
+      "windows": {
+        "certificateThumbprint": null,
+        "digestAlgorithm": "sha256",
+        "timestampUrl": "",
+        "webviewInstallMode": {
+          "type": "embedBootstrapper"
+        }
+      }
+    },
+    "security": {
+      "csp": null
+    },
+    "updater": {
+      "active": false
+    },
+    "windows": [
+      {
+        "fullscreen": false,
+        "resizable": true,
+        "center": true,
+        "title": "BBHouse",
+        "height": 680,
+        "width": 960,
+        "minHeight": 680,
+        "minWidth": 960
+      }
+    ]
+  }
+}
