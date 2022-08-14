@@ -21,7 +21,7 @@ fn main() {
     tauri::Builder::default()
         // .menu(menu::init(&context)) // ✅ 将菜单添加到所有窗口
         .invoke_handler(tauri::generate_handler![start_proxy])
-        .run(tauri::generate_context!())
+        .run(context)
         .expect("error while running tauri application");
 }
 
