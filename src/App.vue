@@ -23,6 +23,16 @@ useDisable()
 
 onMounted(async () => {
   console.log("当前路由:", route.name, route.fullPath) // todo-'/' 路径的 name 为啥是 undefined ?
+
+  // 为了正确地调整新建窗体的位置, 需要计算出系统缩放
+  if (appWindow.label === "main") {
+    const size = await appWindow.innerSize() // 对应指定的窗体大小, 不包含标题栏和MenuBar
+    store.commit("setScale", size.width / 960) // 计算系统级别屏幕缩放比例, 960是主窗口的默认宽度
+    console.log("系统级别屏幕缩放比例:", store.state.scale)
+  }
+  await store.dispatch('setPlatform')  // 设置平台
+
+  // 初始化设置, 如果有配置文件, 则读取配置文件, 否则使用默认值, 顺便设置主题
   if (await store.dispatch('loadConfig')) await store.dispatch("setTheme")
   // 读取本地存储的 cookie
   const local = await store.dispatch('readCookie')
@@ -33,12 +43,14 @@ onMounted(async () => {
     if (store.state.login!.expire) {
       await router.replace({name: 'login'})
     }
-    diskLoaded.value = true
+    diskLoaded.value = true // 异步控制, 避免页面加载-网络请求开始时还没有获取到本地存储的 cookie
   }
 
   // 避免新建窗口时重复进行 effect 操作
   if (appWindow.label !== "main") return
 
+  // 检测更新
+  await store.dispatch('checkUpdate')
   // 注册窗口事件监听器
   await appWindow.listen("main-bbhouse", e => {
     console.log(e)
@@ -90,6 +102,9 @@ body {
   margin: 0;
   overflow: hidden;
   overscroll-behavior: contain;
+  user-select: none;
+  -webkit-user-select: none;
+  font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "微软雅黑", Arial, sans-serif;
 }
 
 #app {

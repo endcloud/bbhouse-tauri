@@ -8,8 +8,8 @@
     "withGlobalTauri": true
   },
   "package": {
-    "productName": "bbhouse-app",
-    "version": "1.0.3"
+    "productName": "BBHouse",
+    "version": "1.0.5"
   },
   "tauri": {
     "allowlist": {
@@ -51,6 +51,9 @@
           "$LOCALDATA/*",
           "$RESOURCE/*"
         ]
+      },
+      "os": {
+        "all": true
       }
     },
     "bundle": {

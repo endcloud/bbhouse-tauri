@@ -1,6 +1,8 @@
 import {Module} from "vuex"
 import {StateTypeRoot} from "../store"
 import {fetch} from '@tauri-apps/api/http'
+import {useReVideoWindow, useVideoWindowState} from "../../hooks"
+import {message, confirm} from "@tauri-apps/api/dialog"
 
 
 export interface StateTypeDynamic {
@@ -10,7 +12,7 @@ export interface StateTypeDynamic {
     showList: Array<any>,
     tagSort: any,
     tagIndex: any,
-    tagList: any[],
+    tagList: string[],
     loading: boolean,
     uwp: boolean,
     keywordTitle: string,
@@ -234,6 +236,18 @@ export const moduleDynamic: Module<StateTypeDynamic, StateTypeRoot> = {
         async refreshDynamic({state, dispatch}) {
             state.loading = true
             await dispatch("getData")
+        },
+        async watchAllInTag({state, rootState}) {
+            if (!await useVideoWindowState()) {
+                await message("请先播放一个视频来打开视频窗口", {title: "异常", type: "error"})
+                return
+            }
+            const isConfirm = await confirm("此操作将会清空当前播放列表\n然后添加当前分区的全部视频", {title: "我全都要", type: "warning"})
+
+            if (!isConfirm) return
+
+            const all = state.oriList.filter(ele => state.tagIndex[state.tagList[state.tabIndex]].includes(ele.tid)).map(ele => ({aid: ele.param, title: ele.title}))
+            await useReVideoWindow(all, rootState.scale)
         }
     }
 }

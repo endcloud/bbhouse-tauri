@@ -82,19 +82,20 @@ const detail = h("div", {}, [
   h("p", {}, "通过默认的 cURL 方式会得到音频和视频两个文件"),
   h("p", {}, ["本软件无法为您合并, 您需要借助", h("a", {
     href: "https://ffmpeg.org",
-    target: "_blank"
+    target: "_blank",
+    style: {color: "palevioletred", "text-decoration": "none"}
   }, " ffmpeg "), "来完成合并"]),
   h("p", {}, ["或者您可以了解一下使用", h("a", {
     href: "https://github.com/nilaoda/BBDown",
-    target: "_blank"
+    target: "_blank",
+    style: {color: "palevioletred", "text-decoration": "none"}
   }, " BBDown "), "进行下载"]),
 
 ])
 
 const downHelp = () => {
   ElMessageBox.alert(detail, '下载帮助', {
-    // if you want to disable its autofocus
-    // autofocus: false,
+    autofocus: true,
     confirmButtonText: '我知道了'
   })
 }
@@ -104,11 +105,25 @@ const checkBBDown = async(e: number) => {
   try {
     const bbdown = new Command("bb", "-info")
     await bbdown.execute()
-  }catch (e) {
-    console.log(e)
-    if (e as string == "program not found"){
+  }catch (e: any) { // tauri的shell-api目前有些编码问题, 交互出现中文也会报错, 而且各个平台报错信息都不一样, 作特别处理
+    console.log(e as string)
+
+    const errMes = (e as string).toLowerCase()
+    const err = {value: false, message: "您似乎还没有安装 BBDown\n请点击 (?...) 查看帮助"}
+    const fileKeyWord = ["file", "program", "executable", "binary", "application", "directory", "folder"]
+
+    if (errMes.includes("no")) {
+      for (const key2 of fileKeyWord) {
+        if (errMes.includes(key2)) {
+          err.value = true
+          break
+        }
+      }
+    }
+
+    if (err.value){
       store.commit("setDownloadImplIndex", 0)
-      await message("您似乎还没有安装 BBDown, 请点击 (?...) 查看帮助", {type: "error", title: "设置错误"})
+      await message(err.message, {type: "error", title: "设置错误"})
     }
   }
 }
@@ -137,6 +152,10 @@ const changeRate = () => {
         </el-select>
       </el-form-item>
 
+      <el-form-item label="HEVC优先">
+        <el-switch v-model="config.player.hevc"/>
+      </el-form-item>
+
       <el-form-item label="默认弹幕状态">
         <el-switch v-model="config.player.isDanmaku"/>
       </el-form-item>
@@ -157,12 +176,12 @@ const changeRate = () => {
         </el-select>
       </el-form-item>
       <el-form-item label="下载视频位置">
-        <el-input v-model="config.downloadVideoPath" disabled />
+        <el-input v-model="config.downloadVideoPath" readonly />
         <el-button text type="primary" @click="changePath(0)" style="margin-left: 10px" id="btn-v">更改</el-button>
       </el-form-item>
 
       <el-form-item label="下载封面位置">
-        <el-input v-model="config.downloadPicPath" disabled />
+        <el-input v-model="config.downloadPicPath" readonly />
         <el-button text type="primary" @click="changePath(1)" style="margin-left: 10px" id="btn-p">更改</el-button>
       </el-form-item>
 
@@ -170,7 +189,6 @@ const changeRate = () => {
         <el-radio-group v-model="config.downloadImplIndex" @change="checkBBDown">
           <el-radio v-for="impl in listDownloadImpl" :label="impl.value">{{ impl.name }}</el-radio>
         </el-radio-group>
-        <!--        <el-link href="https://github.com/nilaoda/BBDown" target="_blank" :underline="false">&nbsp;(...?)</el-link>-->
         <el-link :underline="false" @click="downHelp">&nbsp;(...?)</el-link>
       </el-form-item>
 
@@ -187,5 +205,4 @@ const changeRate = () => {
 .el-input {
   max-width: 30vw;
 }
-
 </style>

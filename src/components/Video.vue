@@ -5,8 +5,8 @@ import DPlayer, {DPlayerDanmaku, DPlayerEvents, DPlayerOptions, DPlayerVideo} fr
 import {onMounted, ref} from "vue"
 import {useRoute} from "vue-router"
 import {useStore} from "../vuex"
-import {useAPlayer, useAuData, useDownload, useNativeBB, useQnData, useTs2Time} from "../hooks"
-import {appWindow, LogicalSize, PhysicalSize} from "@tauri-apps/api/window"
+import {useAPlayer, useAuData, useDownload, useDPlayerReg, useNativeBB, useQnData, useTs2Time} from "../hooks"
+import {appWindow, PhysicalSize} from "@tauri-apps/api/window"
 import {listen} from "@tauri-apps/api/event"
 
 const route = useRoute()
@@ -16,13 +16,24 @@ const activeName = ref("0")
 
 let dp: DPlayer
 let ap: any
-const flv = false
-const videoType: string = flv ? "customFlv" : "mp4"
+let flvPlayer: flvjs.Player // 以上均应为唯一实例, 需要手动销毁重建
+let lastDecodedFrame = 0 // 已经解码(播放)的帧数
+let bufferGetTimes = 0 // seek时请求到缓存buffer的次数, >0即表示已经可以播放
+let timesThreshold = 3 // 手动跳帧的阈值， 高画质视频会在videoOption()中提升到4
 
-const flvHandle = (video: any, player: any) => {
-  const flvPlayer = flvjs.createPlayer({
+// const flv = false // 测试用
+const flv = !store.state.platform.includes("windows")
+
+const flvHandle = (video: HTMLVideoElement, player: DPlayer) => {
+  flvPlayer = flvjs.createPlayer({
     type: 'flv',
     url: video.src,
+  }, {
+    enableWorker: false,
+    enableStashBuffer: true,
+    autoCleanupSourceBuffer: true,
+    lazyLoad: true,
+    lazyLoadMaxDuration: 60
   })
   flvPlayer.attachMediaElement(video)
   flvPlayer.load()
@@ -30,10 +41,39 @@ const flvHandle = (video: any, player: any) => {
     // todo flv.js的错误处理
     console.log(errType, errDetail)
   })
+  flvPlayer.on(flvjs.Events.METADATA_ARRIVED, (metadata) => {
+    console.log(metadata)
+  })
+  flvPlayer.on(flvjs.Events.STATISTICS_INFO, (res) => {
+    // console.log(res)
+
+    // 处理seek时的手动追帧
+    if (lastDecodedFrame == 0) {
+      lastDecodedFrame = res.decodedFrames
+      return
+    }
+    if (lastDecodedFrame != res.decodedFrames) {
+      console.log("正常播放的lastDecodedFrame", lastDecodedFrame, "res.decodedFrames", res.decodedFrames, bufferGetTimes)
+      lastDecodedFrame = res.decodedFrames
+      bufferGetTimes = 0
+    } else {
+      console.log("异常的lastDecodedFrame", lastDecodedFrame, "res.decodedFrames", res.decodedFrames, bufferGetTimes)
+      if (flvPlayer) {
+        bufferGetTimes++
+        if (bufferGetTimes > timesThreshold) {
+          if (video.paused) return // 避免暂停时触发
+          player.seek(video.currentTime + 1)
+          bufferGetTimes = 0
+          lastDecodedFrame = 0
+        }
+      }
+    }
+  })
 }
 const videoOption = (vList: any[], pic: string): DPlayerVideo => {
   const qn = vList.map((v, index) => v.id === store.state.settings!.defaultQn ? index : -1).find(i => i !== -1) ??
       vList.map((v, index) => v.id < store.state.settings!.defaultQn ? index : -1).find(i => i !== -1) ?? 0
+  timesThreshold = vList[qn].id >= 120 ? 4 : 3
   return {
     // url: 'http://qiniu-video.cdn.bcebos.com/test.mp4',
     quality: vList,
@@ -63,9 +103,13 @@ const danmakuOption = (aid: string, cid: string): DPlayerDanmaku => {
 const initDp = (aid: string, cid: string, vList: any[], pic: string) => {
   const options: DPlayerOptions = {
     container: document.getElementById('dplayer'),
-    screenshot: true,
+    screenshot: false,
+    hotkey: true,
+    airplay: true,
     video: videoOption(vList, pic),
     danmaku: danmakuOption(aid, cid),
+    preload: "metadata",
+    autoplay: true,
     subtitle: {
       url: 'https://api.endcloud.cn/ja.vtt',
       type: 'webvtt',
@@ -102,7 +146,6 @@ const initDp = (aid: string, cid: string, vList: any[], pic: string) => {
   dp.on(<DPlayerEvents>'fullscreen_cancel', async () => {
     appWindow.setFullscreen(false).then(async () => {
       await appWindow.setSize(new PhysicalSize(state.windowSize.width, state.windowSize.height))
-      await appWindow.center()
     })
   })
   dp.on(<DPlayerEvents>'loadeddata', async () => {
@@ -110,10 +153,19 @@ const initDp = (aid: string, cid: string, vList: any[], pic: string) => {
     dp.video.playbackRate = store.state.settings!.player.playRate
     if (!store.state.settings!.player.isDanmaku) dp.danmaku.hide()
   })
+  dp.on(<DPlayerEvents>'play', async () => {
+    console.log('play')
+    if (bufferGetTimes > timesThreshold) { // 防止暂停时进行的seek无法触发追帧
+      // dp.seek(dp.video.currentTime + 1)
+      bufferGetTimes = 0
+      lastDecodedFrame = 0
+    }
+  })
+
 }
 const nextPlay = async () => {
-  const playData = await useNativeBB(state.playList[state.playIndex].aid, store.state.login!.cookie as string, flv)
-  const playList = useQnData(playData)
+  const playData = await useNativeBB(state.playList[state.playIndex].aid, store.state.login!.cookie, flv, store.state.settings!.defaultQn)
+  const playList = useQnData(playData, store.state.settings!.player.hevc)
 
   console.log(playList)
 
@@ -128,15 +180,25 @@ const nextPlay = async () => {
     console.log(ap.list)
     ap.list.switch(0)
   } else {
-    console.log("ap不存在")
+    console.log("当前播放器不存在aplayer")
   }
 
   try {
+    if (flvPlayer) {
+      flvPlayer.unload()
+      flvPlayer.detachMediaElement()
+      flvPlayer.destroy()
+    }
     dp.destroy()
-    ap.destroy()
+    initDp(state.playList[state.playIndex].aid, playData.cid, playList!, playData.baseData.pic)
 
-    initDp(state.playList[state.playIndex].aid, playData.cid, playList, playData.baseData.pic)
-    ap = videoType == "mp4" ? useAPlayer(dp, useAuData(playData), route.query.t as string) : undefined
+    // if (ap) {
+    //   ap.destroy()
+    //   ap = flv ? undefined : useAPlayer(dp, useAuData(playData), route.query.t as string)
+    // }
+
+    useDPlayerReg(dp, ap)
+
   } catch (e) {
     console.log(e)
   }
@@ -149,27 +211,35 @@ const nextPlay = async () => {
 onMounted(
     async () => {
       console.log(route.query,)
-      store.commit("setPlayList", {
+      store.commit("add2PlayList", {
         title: route.query.t,
         aid: route.query.aid
       })
 
-      const playData = await useNativeBB(route.query.aid as string, store.state.login!.cookie, flv)
-      const playList = useQnData(playData)
+      const playData = await useNativeBB(route.query.aid as string, store.state.login!.cookie, flv, store.state.settings!.defaultQn)
+      const playList = useQnData(playData, store.state.settings!.player.hevc)
       console.log(playList)
-      initDp(route.query.aid as string, playData.cid, playList, playData.baseData.pic)
-      ap = videoType == "mp4" ? useAPlayer(dp, useAuData(playData), route.query.t as string) : undefined
+      initDp(route.query.aid as string, playData.cid, playList!, playData.baseData.pic)
+      ap = flv ? undefined : useAPlayer(dp, useAuData(playData), route.query.t as string)
+      useDPlayerReg(dp, ap)
 
       // 注册全局事件, 添加新的视频到播放列表
-      const unlisten = listen('new-video', async (event) => {
+      const unlisten = await listen('new-video', (event) => {
+        const temp = JSON.parse(event.payload as string)
+        store.commit("add2PlayList", temp)
+      })
+      // 注册全局事件, 批量添加视频到播放列表
+      await listen('new-videos', (event) => {
         const temp = JSON.parse(event.payload as string)
         store.commit("setPlayList", temp)
+        nextPlay()
       })
       // 注册窗口事件, 自动播放下一个视频
-      await appWindow.listen('next-video', async (event) => {
+      await appWindow.listen('next-video', (event) => {
         if (state.playIndex + 1 < state.playList.length) {
+          console.log("自动播放下一个视频")
           store.commit('setPlayIndex', state.playIndex + 1)
-          await nextPlay()
+          nextPlay()
         }
       })
       // 加载评论
@@ -206,10 +276,10 @@ const setCommentPage = async (e: number) => {
                 :content="video.title"
                 placement="left"
             >
-            <div class="playListItem" :id="`${index}`"
-                 :class="state.playIndex === index ? `isPlaying` : ``" @click="clickTab">
+              <div class="playListItem" :id="`${index}`"
+                   :class="state.playIndex === index ? `isPlaying` : ``" @click="clickTab">
                 {{ `${index + 1}. ${video.title}` }}
-            </div>
+              </div>
             </el-tooltip>
           </div>
         </el-scrollbar>
@@ -291,7 +361,7 @@ span.mem-name {
 }
 
 span.time {
-  font-size: 10px;
+  font-size: 12px;
   grid-column-start: 2;
   grid-column-end: 5;
   grid-row-start: 2;

@@ -350,6 +350,14 @@ axios@0.19.2:
   dependencies:
     follow-redirects "1.5.10"
 
+babel-runtime@^6.26.0:
+  version "6.26.0"
+  resolved "https://registry.yarnpkg.com/babel-runtime/-/babel-runtime-6.26.0.tgz#965c7058668e82b55d7bfe04ff2337bc8b5647fe"
+  integrity sha512-ITKNuq2wKlW1fJg9sSW52eepoYgZBggvOAHC0u/CYu/qxQ9EVzThCgR69BnSXLHjy2f7SY5zaQ4yt7H9ZVxY2g==
+  dependencies:
+    core-js "^2.4.0"
+    regenerator-runtime "^0.11.0"
+
 balanced-match@^1.0.0:
   version "1.0.2"
   resolved "https://repo.huaweicloud.com/repository/npm/balanced-match/-/balanced-match-1.0.2.tgz#e83e3a7e3f300b34cb9d87f615fa0cbf357690ee"
@@ -406,6 +414,11 @@ copy-anything@^2.0.1:
   dependencies:
     is-what "^3.14.1"
 
+core-js@^2.4.0:
+  version "2.6.12"
+  resolved "https://registry.yarnpkg.com/core-js/-/core-js-2.6.12.tgz#d9333dfa7b065e347cc5682219d6f690859cc2ec"
+  integrity sha512-Kb2wC0fvsWfQrgk8HU5lW6U/Lcs8+9aaYcy4ZFc6DDlo4nZ7n70dEgE5rtR0oG6ufKDUnrwfWL1mXR5ljDatrQ==
+
 core-js@^3.6.5:
   version "3.24.1"
   resolved "https://repo.huaweicloud.com/repository/npm/core-js/-/core-js-3.24.1.tgz#cf7724d41724154010a6576b7b57d94c5d66e64f"
@@ -446,6 +459,11 @@ debug@^4.3.4:
   integrity sha512-PRWFHuSU3eDtQJPvnNY7Jcket1j0t5OuOsFzPPzsekD52Zl8qUfFIPEiswXqIvHWGVHOgX+7G/vCNNhehwxfkQ==
   dependencies:
     ms "2.1.2"
+
+demuxer@^2.1.1:
+  version "2.3.0"
+  resolved "https://registry.yarnpkg.com/demuxer/-/demuxer-2.3.0.tgz#8604ac8f51a0f277db00ae4f95c0e63648cb37a5"
+  integrity sha512-vxyPHej3RnUeb0cRw3/ZGDesXRkKyqB96lIoSKELCL41onZ9tzfcMEXnGi8X7LPlvC6PsP68AMcZ6iSE3rkF3A==
 
 dplayer@^1.26.0:
   version "1.26.0"
@@ -687,6 +705,17 @@ glob-parent@^5.1.2, glob-parent@~5.1.2:
   dependencies:
     is-glob "^4.0.1"
 
+goldvideo-player@^1.0.2:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/goldvideo-player/-/goldvideo-player-1.0.2.tgz#284fbdc610de523931f385c433263738a3a30c67"
+  integrity sha512-9hfl6COoQsxRl3grLh9j/XLNEqWl2yn3T3FyEx3m/PevOY/Fum8+suqR7cdCrbX4dW1W+31hRsaiuewstl75Fw==
+  dependencies:
+    babel-runtime "^6.26.0"
+    demuxer "^2.1.1"
+    loadjs "^4.2.0"
+    yuv-buffer "^1.0.0"
+    yuv-canvas "^1.2.6"
+
 graceful-fs@^4.1.2:
   version "4.2.10"
   resolved "https://repo.huaweicloud.com/repository/npm/graceful-fs/-/graceful-fs-4.2.10.tgz#147d3a006da4ca3ce14728c7aefc287c367d7a6c"
@@ -780,6 +809,11 @@ less@^4.1.3:
     mime "^1.4.1"
     needle "^3.1.0"
     source-map "~0.6.0"
+
+loadjs@^4.2.0:
+  version "4.2.0"
+  resolved "https://registry.yarnpkg.com/loadjs/-/loadjs-4.2.0.tgz#2a0336376397a6a43edf98c9ec3229ddd5abb6f6"
+  integrity sha512-AgQGZisAlTPbTEzrHPb6q+NYBMD+DP9uvGSIjSUM5uG+0jG15cb8axWpxuOIqrmQjn6scaaH8JwloiP27b2KXA==
 
 local-pkg@^0.4.2:
   version "0.4.2"
@@ -984,6 +1018,11 @@ readdirp@~3.6.0:
   integrity sha512-hOS089on8RduqdbhvQ5Z37A0ESjsqz6qnRcffsMU3495FuTdqSm+7bhJ29JvIOsBDEEnan5DPu9t3To9VRlMzA==
   dependencies:
     picomatch "^2.2.1"
+
+regenerator-runtime@^0.11.0:
+  version "0.11.1"
+  resolved "https://registry.yarnpkg.com/regenerator-runtime/-/regenerator-runtime-0.11.1.tgz#be05ad7f9bf7d22e056f9726cee5017fbf19e2e9"
+  integrity sha512-MguG95oij0fC3QV3URf4V2SDYGJhJnJGqvIIgdECeODCT98wSWDAJ94SSuVpYQUoTcGUIL6L4yNB7j1DFFHSBg==
 
 resolve@^1.22.1:
   version "1.22.1"
@@ -1218,3 +1257,13 @@ webworkify-webpack@^2.1.5:
   version "2.1.5"
   resolved "https://repo.huaweicloud.com/repository/npm/webworkify-webpack/-/webworkify-webpack-2.1.5.tgz#bf4336624c0626cbe85cf1ffde157f7aa90b1d1c"
   integrity sha512-2akF8FIyUvbiBBdD+RoHpoTbHMQF2HwjcxfDvgztAX5YwbZNyrtfUMgvfgFVsgDhDPVTlkbb5vyasqDHfIDPQw==
+
+yuv-buffer@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/yuv-buffer/-/yuv-buffer-1.0.0.tgz#09a454858d74df2bc31cd588edd70ffcb86bfc9a"
+  integrity sha512-5r5u7g7Dbdrwao/z8c4harQIpZwaNuzXjQXtgdFxTjr5Pm2eMmxIuckkKOONEM7fkiMNkeffXs6EPNESvAVzVg==
+
+yuv-canvas@^1.2.6:
+  version "1.2.11"
+  resolved "https://registry.yarnpkg.com/yuv-canvas/-/yuv-canvas-1.2.11.tgz#2111f3e11a710d511bc3e15624554890fbdc140e"
+  integrity sha512-LOxjD+gUO7XeHeExFEozpTEFBlbqEZOnaHLAwx4esJ2tzSWl/S/xDRSDu1N+asxYn7ldV+HtisrYAzJXkT7Rhw==

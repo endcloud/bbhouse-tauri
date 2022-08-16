@@ -36,6 +36,11 @@ const openRepo = reactive<TypeOpenRepo[]>([
     desc: "基于 Vue 3 的二维码生成组件"
   },
   {
+    name: "vue3-contextmenu",
+    url: "https://github.com/Hunlongyu/vue3-contextmenu",
+    desc: "基于 Vue 3 的右键菜单组件"
+  },
+  {
     name: "crypto-js",
     url: "https://github.com/brix/crypto-js",
     desc: "基于原生 js 实现的哈希函数和加密算法库"
@@ -73,7 +78,7 @@ const openRepo = reactive<TypeOpenRepo[]>([
           <el-link
               :underline="false"
               target="_blank"
-              href="https://github.com/endcloud"
+              href="https://github.com/endcloud/bbhouse-tauri"
               style="margin-left: 0">
             前往仓库
           </el-link>

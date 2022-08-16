@@ -44,6 +44,10 @@ const store = useStore()
         <el-icon><InfoFilled /></el-icon>
         <template #title>关于</template>
       </el-menu-item>
+      <el-menu-item index="test" v-if="false">
+        <el-icon><QuestionFilled /></el-icon>
+        <template #title>Test</template>
+      </el-menu-item>
     </el-menu>
   </el-scrollbar>
 </template>

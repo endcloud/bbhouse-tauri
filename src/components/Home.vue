@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {nextTick, onMounted, ref} from "vue"
+import {nextTick, onMounted, onUnmounted, ref} from "vue"
 import DynamicArea from "./DynamicArea.vue"
 import {useStore} from "../vuex"
 import {ElLoading, TabPanelName, TabsPaneContext} from "element-plus/es"
@@ -31,6 +31,12 @@ onMounted(async () => {
   }
 })
 
+onUnmounted(async () => {
+  if(state.isSearch){
+    store.commit("resetFilter")
+  }
+})
+
 const clickTab = (pane: TabsPaneContext, ev: Event) => {
   store.commit("changeSrc", {tag: pane.props.label, index: parseInt(pane.index as string)})
 }
@@ -59,17 +65,35 @@ const refresh = () => {
   store.dispatch('refreshDynamic', "蒙古上单")
 }
 
+const iGetAll = () => {
+  store.dispatch("watchAllInTag")
+}
+
 </script>
 
 <template>
   <el-row :gutter="10" justify="start" align="middle">
-    <el-col :span="16">
+    <el-col :span="12">
       <h2>
         {{ state.pageTitle }}
         <el-button text circle icon="refresh" type="info" @click="refresh"/>
       </h2>
-
     </el-col>
+    <el-col :span="4" style="text-align: right; padding-right: 10px">
+      <el-dropdown>
+        <span style="font-size: 16px; cursor: pointer; user-select: none">
+          🥰
+        </span>
+        <template #dropdown>
+          <el-dropdown-menu>
+            <el-dropdown-item>
+              <el-link :underline="false" @click="iGetAll">我全都要</el-link>
+            </el-dropdown-item>
+          </el-dropdown-menu>
+        </template>
+      </el-dropdown>
+    </el-col>
+
     <el-col :span="4">
       <el-input v-model="refTitle" placeholder="过滤标题" @change="onSearch" @clear="onSearch" id="search-title"
                 clearable/>
@@ -88,7 +112,7 @@ const refresh = () => {
   <el-tabs :tab-position="tabPosition" style="height: auto" @tab-click="clickTab" @tab-change="changeTab"
            v-model="state.tabIndex" v-if="!state.isSearch && !state.loading">
     <el-tab-pane v-for="(tag, index) in state.tagList" :label="tag" :name="index" class="dynamic-list">
-      <el-scrollbar class="dynamic-scroll" v-if="index === state.tabIndex" >
+      <el-scrollbar class="dynamic-scroll" v-if="index === state.tabIndex">
         <DynamicArea :dynamic-list="state.oriList.filter(ele => state.tagIndex[tag].includes(ele.tid))"/>
         <div style="height: 8vh"></div>
       </el-scrollbar>
@@ -97,10 +121,10 @@ const refresh = () => {
 
   <el-scrollbar class="dynamic-scroll" v-if="state.isSearch">
     <DynamicArea :dynamic-list="state.showList"/>
+    <el-backtop :right="100" :bottom="100"/>
     <div style="height: 8vh"></div>
-  </el-scrollbar>
 
-  <el-backtop :right="100" :bottom="100"/>
+  </el-scrollbar>
 
 </template>
 

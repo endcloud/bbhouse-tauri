@@ -29,11 +29,16 @@ export const moduleVideo: Module<StateTypeVideo, StateTypeRoot> = {
             state.playIndex = payload
             state.title = state.playList[payload].title
         },
-        setPlayList(state, payload: any) {
+        add2PlayList(state, payload: any) {
             if (state.playList.map(video => video.aid).includes(payload.aid)) return
 
             state.playList.push(payload)
             state.count++
+        },
+        setPlayList(state, payload: any[]) {
+            state.playList = payload
+            state.count = payload.length
+            state.playIndex = 0
         },
         setWindowSize(state, payload: { width: number, height: number }) {
             state.windowSize = payload

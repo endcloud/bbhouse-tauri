@@ -1,0 +1,14 @@
+## v1.0.4 and v1.0.5
+- add You can Add all videos in the current partition with one click.
+- add Google Analytics and Check for Updates.
+- fix player in Mac by flvMode.
+- fix some font-problem.
+- fix bbdown-check in Mac.
+- fix bugs of some components in LightMode.
+- fix some bug of FilterMode in HomePage.
+- opt position of new Window.
+- opt local-proxy's MIME.
+- opt tip while a new video was added.
+- opt position of dynamic-card-popMenu
+- opt App Name in SystemMenu.
+- opt the max qn in flvMode.

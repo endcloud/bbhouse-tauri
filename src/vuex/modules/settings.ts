@@ -11,7 +11,7 @@ export interface StateTypeSettings {
     appearanceIndex: number
     defaultQn: number,
     defaultQnDown: number,
-    player: { isDanmaku: boolean, playRate: number },
+    player: { isDanmaku: boolean, playRate: number, flv: boolean, hevc: boolean },
     isLiveRecordShow: boolean,
 }
 
@@ -23,7 +23,7 @@ export const moduleSettings: Module<StateTypeSettings, StateTypeRoot> = {
         appearanceIndex: 0,
         defaultQn: 80,
         defaultQnDown: 80,
-        player: {isDanmaku: true, playRate: 1},
+        player: {isDanmaku: true, playRate: 1, flv: false, hevc: true},
         isLiveRecordShow: true,
     }),
     mutations: {
@@ -60,6 +60,7 @@ export const moduleSettings: Module<StateTypeSettings, StateTypeRoot> = {
                 const ori = "nO1pCNbythT5FVfsgZ8u/Ff10aJOJxtyZdH4nsteiUjbUSl+bE49Qb8fTvZ28nGF+WD6eWprIBZ/E+SN7TVCJIJRSNatqYMJetetKfmZ2uwgOMA1sBdiWyMJnnYOSYebmQuedVFhjhf0IJa4MOm5gdr3By2qfTBYvbrJBPlPaNiNMvQGF4T5jtvCzLK8Zjmo9txiX1jpz2T8dGDSmJ/kmwCqVPnE479RIkA+pgonAXNfv6yLwpo9TBQ2G5pdcIrc"
                 const config = JSON.parse(useAES_ECB_DECRYPT(ori))
                 Object.assign(state, config)
+                state.player = {isDanmaku: true, playRate: 1, flv: false, hevc: false}
                 // await message("读取配置文件错误, 将以默认设置运行", {title: "读取错误", type: "error"})
             }
 

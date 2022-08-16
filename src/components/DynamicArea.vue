@@ -28,7 +28,7 @@ const downVideo = async (aid: string) => {
 
   try {
     playData = await useNativeBB(aid, store.state.login?.cookie as string, false)
-    playList = useQnData(playData)
+    playList = useQnData(playData, store.state.settings!.player.hevc)
   } catch (e) {
     console.log(e)
   }
@@ -83,7 +83,7 @@ const tipDownError = (mes: string) => {
           <el-link
               target="_blank"
               :underline="false"
-              @click="openVideoWindow(`${item.param}`, item.title)">
+              @click="openVideoWindow([{aid: `${item.param}`, title: item.title}], store.state.scale)">
             <span class="title">{{ item.title }}</span>
           </el-link>
 
@@ -98,7 +98,7 @@ const tipDownError = (mes: string) => {
             <time class="time">{{ useTs2Time(item.ctime) }}</time>
 
             <el-popover
-                placement="bottom"
+                placement="top"
                 :width="100"
                 trigger="click"
             >
@@ -115,7 +115,7 @@ const tipDownError = (mes: string) => {
               </el-row>
               <el-row>
                 <el-link :href="`https://www.bilibili.com/video/av${item.param}`" target="_blank"
-                         :underline="false">稍后再看
+                         :underline="false">去网页
                 </el-link>
               </el-row>
             </el-popover>
@@ -156,7 +156,7 @@ div.grid {
 .time {
   grid-column-start: 1;
   grid-column-end: 3;
-  font-size: 8px;
+  font-size: 12px;
   color: #999;
   display: -webkit-box;
   -webkit-line-clamp: 1;

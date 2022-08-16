@@ -22,6 +22,9 @@ declare module '@vue/runtime-core' {
     ElContainer: typeof import('element-plus/es')['ElContainer']
     ElDescriptions: typeof import('element-plus/es')['ElDescriptions']
     ElDescriptionsItem: typeof import('element-plus/es')['ElDescriptionsItem']
+    ElDropdown: typeof import('element-plus/es')['ElDropdown']
+    ElDropdownItem: typeof import('element-plus/es')['ElDropdownItem']
+    ElDropdownMenu: typeof import('element-plus/es')['ElDropdownMenu']
     ElForm: typeof import('element-plus/es')['ElForm']
     ElFormItem: typeof import('element-plus/es')['ElFormItem']
     ElIcon: typeof import('element-plus/es')['ElIcon']
@@ -52,6 +55,7 @@ declare module '@vue/runtime-core' {
     RouterView: typeof import('vue-router')['RouterView']
     Settings: typeof import('./src/components/Settings.vue')['default']
     SplashScreen: typeof import('./src/components/SplashScreen.vue')['default']
+    TestMac: typeof import('./src/components/TestMac.vue')['default']
     TimeMachine: typeof import('./src/components/TimeMachine.vue')['default']
     Video: typeof import('./src/components/Video.vue')['default']
   }

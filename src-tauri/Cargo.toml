@@ -1,8 +1,8 @@
 [package]
 name = "app"
-version = "1.0.3"
+version = "1.0.5"
 description = "A Bilibili Cross-Platform Desktop Client Powered By Tauri"
-authors = ["endcloud"]
+authors = ["endcloud <endcloud@qq.com>"]
 license = "GPL-3.0"
 repository = "https://github.com/endcloud/bbhouse-tauri"
 default-run = "app"
@@ -17,7 +17,7 @@ tauri-build = { version = "1.0.4", features = [] }
 [dependencies]
 serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
-tauri = { version = "1.0.5", features = ["dialog-all", "fs-all", "http-all", "path-all", "shell-execute", "shell-open", "shell-sidecar", "window-all"] }
+tauri = { version = "1.0.5", features = ["dialog-all", "fs-all", "http-all", "os-all", "path-all", "shell-execute", "shell-open", "shell-sidecar", "window-all"] }
 tokio = { version = "1.20.1", features = ["full"] }
 hyper = { version = "0.14.20", features = ["full"] }
 hyper-rustls = "0.23.0"

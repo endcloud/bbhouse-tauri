@@ -5,8 +5,8 @@ use anyhow::*;
 use hyper::{Body, Client, Request, Response, Server, StatusCode, Uri};
 use hyper::service::{make_service_fn, service_fn};
 
-fn proxy_crate(req: &mut Request<Body>) -> Result<()> {
-    for key in &["content-length", "accept-encoding", "content-encoding", "transfer-encoding", "host"] {
+fn req_crate(req: &mut Request<Body>) -> Result<()> {
+    for key in &["host", "referer", "user-agent"] {
         req.headers_mut().remove(*key);
     }
     req.headers_mut().insert("host", "upos-sz-mirrorcoso1.bilivideo.com".parse()?);
@@ -15,11 +15,25 @@ fn proxy_crate(req: &mut Request<Body>) -> Result<()> {
 
     let uri = req.uri();
     let uri_string = match uri.query() {
-        Some(query_item) => format!("https://upos-sz-mirrorcoso1.bilivideo.com{}?{}", uri.path(), query_item),
-        None => format!("https://upos-sz-mirrorcoso1.bilivideo.com{}", uri.path())
+        Some(query_item) => format!("https://upos-sz-mirrorcoso1.bilivideo.com{}?{}", uri.path().replace(".mp4", ".m4s"), query_item),
+        None => format!("https://upos-sz-mirrorcoso1.bilivideo.com{}", uri.path().replace(".mp4", ".m4s"))
     };
 
     *req.uri_mut() = uri_string.parse().context("Parsing URI Error")?;
+
+    // for header in req.headers().iter() {
+    //     println!("{}: {}", header.0, header.1.to_str()?)
+    // }
+    Ok(())
+}
+
+fn resp_crate(resp: &mut Response<Body>) -> Result<()> {
+    for key in &["content-type", "access-control-allow-origin"] {
+        resp.headers_mut().remove(*key);
+    }
+    resp.headers_mut().insert("content-type", "video/mp4".parse()?);
+    resp.headers_mut().insert("access-control-allow-origin", "*".parse()?);
+
     Ok(())
 }
 
@@ -45,8 +59,16 @@ pub(crate) async fn main() -> Result<()> {
                     let client = Arc::clone(&client);
                     async move {
                         println!("proxy: {}", req.uri().path());
-                        proxy_crate(&mut req)?;
-                        client.request(req).await.context("proxy request")
+                        req_crate(&mut req)?;
+                        let resp = client.request(req).await.context("proxy request");
+                        let mut resp: Response<Body> = match resp {
+                            Result::Ok(res) => res,
+                            Err(_) => {
+                                Response::new(Body::from("proxy Error"))
+                            }
+                        };
+                        resp_crate(&mut resp)?;
+                        Ok(resp)
                     }
                 }
             )

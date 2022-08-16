@@ -5,6 +5,7 @@ import Video from './components/Video.vue'
 import Login from './components/Login.vue'
 import About from './components/About.vue'
 import Settings from './components/Settings.vue'
+import TestMac from './components/TestMac.vue'
 
 
 // 定义几个临时的路由组件
@@ -30,7 +31,8 @@ const routes = [
     {name: "login", path: '/login', component: Login},
     {name: "about", path: '/about', component: About, props: {msg: 'Hello'}},
     {name: "video", path: '/video', components: {default: btn, VideoContainer: Video}},
-    {name: "404", path: '/:pathMatch(.*)*', component: Other}
+    {name: "404", path: '/:pathMatch(.*)*', component: Other},
+    {name: "test", path: '/test', component: TestMac}
 ]
 
 // 创建路由实例导出给main.ts

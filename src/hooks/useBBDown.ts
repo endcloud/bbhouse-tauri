@@ -1,4 +1,4 @@
-import {Command, open} from "@tauri-apps/api/shell"
+import {Command} from "@tauri-apps/api/shell"
 import {message} from "@tauri-apps/api/dialog"
 
 const BBDOWN_MAPS = {
@@ -7,13 +7,12 @@ const BBDOWN_MAPS = {
         desc: "info",
     },
     download: {
-        command: ["--encoding-priority", "hevc,avc,av1", "--dfn-priority", "8K 超高清, 杜比视界, HDR 真彩, 4K 超清", "--use-aria2c"],
+        command: ["--encoding-priority", "\"hevc,avc,av1\"", "--dfn-priority", "\"8K 超高清, 杜比视界, HDR 真彩, 4K 超清\""], // 暂时移除aria2c, "--use-aria2c"
         desc: "download",
     },
 }
 
 const useBBDown = async (command: string[], runPath?: string, done?: () => void) => {
-    // onProgress(1, `ffmpeg params：${command.join(" ")}`)
     console.log(command.join(" "))
 
     // const bbdown = Command.sidecar("BBDown", command)

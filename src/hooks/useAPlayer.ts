@@ -15,18 +15,22 @@ export const useAPlayer = (dp: DPlayer, url: string, title: string = 'audio-stre
             preload: 'auto',
         }]
     }
-    const ap = new APlayer(audioOptions)
 
+    return new APlayer(audioOptions)
+}
+
+export const useDPlayerReg = (dp: DPlayer, ap?: any): any => {
     dp.on(<DPlayerEvents>'playing', () => {
         console.log('playing')
-        ap.seek(dp.video.currentTime)
-        ap.play()
+        ap?.seek(dp.video.currentTime)
+        ap?.play()
     })
     dp.on(<DPlayerEvents>'pause', () => {
         console.log('pause')
-        ap.pause()
+        ap?.pause()
     })
     dp.on(<DPlayerEvents>'seeking', () => {
+        if (!ap) return
         console.log('seeking')
         if (!dp.video.paused){
             dp.pause()
@@ -39,23 +43,21 @@ export const useAPlayer = (dp: DPlayer, url: string, title: string = 'audio-stre
         }
     })
     dp.on(<DPlayerEvents>'ended', async () => {
-        ap.pause()
+        ap?.pause()
         await appWindow.emit("next-video", 0)
     })
     dp.on(<DPlayerEvents>'ratechange', () => {
-        ap.audio.playbackRate = dp.video.playbackRate
+        if (ap) ap.audio.playbackRate = dp.video.playbackRate
     })
     dp.on(<DPlayerEvents>'volumechange', () => {
-        ap.volume(dp.video.volume, false)
+        ap?.volume(dp.video.volume, false)
     })
     dp.on(<DPlayerEvents>'loadstart', () => {
         console.log('loadstart')
-        ap.pause()
+        ap?.pause()
     })
     dp.on(<DPlayerEvents>'canplay', () => {
         console.log('canplay')
         dp.play()
     })
-
-    return ap
 }
