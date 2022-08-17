@@ -235,6 +235,7 @@ export const moduleDynamic: Module<StateTypeDynamic, StateTypeRoot> = {
         },
         async refreshDynamic({state, dispatch}) {
             state.loading = true
+            state.oriList = []
             await dispatch("getData")
         },
         async watchAllInTag({state, rootState}) {

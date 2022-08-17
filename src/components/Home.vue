@@ -76,11 +76,11 @@ const iGetAll = () => {
     <el-col :span="12">
       <h2>
         {{ state.pageTitle }}
-        <el-button text circle icon="refresh" type="info" @click="refresh"/>
+        <el-button text circle icon="refresh" type="info" @click="refresh" v-if="!state.isSearch"/>
       </h2>
     </el-col>
     <el-col :span="4" style="text-align: right; padding-right: 10px">
-      <el-dropdown>
+      <el-dropdown v-if="!state.isSearch">
         <span style="font-size: 16px; cursor: pointer; user-select: none">
           🥰
         </span>

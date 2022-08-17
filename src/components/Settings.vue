@@ -193,7 +193,7 @@ const changeRate = () => {
       </el-form-item>
 
       <el-form-item label="登录状态">
-        <span>有效 | {{ store.state.login?.expireDate }} 过期</span>
+        <span>{{store.state.login?.expire ? `无效` : `有效`}} | {{ store.state.login?.expireDate }} 过期</span>
         <el-button text type="primary" @click="reLogin" style="margin-left: 50px">重新登录</el-button>
       </el-form-item>
 
