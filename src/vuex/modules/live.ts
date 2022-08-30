@@ -9,6 +9,7 @@ export interface StateTypeLive {
     count: number,
     initUrl: string,
     statusUrl: string,
+    playUrl: string,
     uids: Array<any>,
     oriList: Array<any>,
     showList: Array<any>,
@@ -33,6 +34,7 @@ export const moduleLive: Module<StateTypeLive, StateTypeRoot> = {
         count: 0,
         initUrl: "https://api.bilibili.com/x/polymer/web-dynamic/v1/portal",
         statusUrl: "https://api.live.bilibili.com/room/v1/Room/get_status_info_by_uids",
+        playUrl: "https://api.live.bilibili.com/room/v1/Room/playUrl",
         uids: [],
         oriList: [],
         showList: [],
@@ -113,6 +115,32 @@ export const moduleLive: Module<StateTypeLive, StateTypeRoot> = {
         process: 0
     }),
     mutations: {
+        doLiveFilter(state, payload: { title: string, up: string }) {
+            if (payload.title === "" && payload.up === "") return
+            if (payload.title === state.keywordTitle && payload.up === state.keywordUp) return
+
+            state.keywordTitle = payload.title
+            state.keywordUp = payload.up
+
+            state.showList = state.oriList
+                .filter((item: any) => item.uname.toLowerCase().indexOf(state.keywordUp.toLowerCase()) > -1)
+                .filter((item: any) => item.title.toLowerCase().indexOf(state.keywordTitle.toLowerCase()) > -1)
+
+            state.isSearch = true
+            state.pageTitle = "过滤"
+            state.srcListBak = [...state.srcList]
+            state.srcList = state.showList.map(ele => ele.cover)
+        },
+        resetLiveFilter(state) {
+            if (state.showList.length === state.oriList.length) return
+            state.showList = state.oriList
+            state.keywordTitle = ""
+            state.keywordUp = ""
+            state.isSearch = false
+            state.pageTitle = "直播"
+            state.srcList = [...state.srcListBak]
+            state.srcListBak = []
+        }
     },
     actions: {
         async getLiveData({ commit, state, rootState }) {

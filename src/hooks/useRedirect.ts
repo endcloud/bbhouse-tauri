@@ -57,9 +57,7 @@ export const useReVideoWindow = async (videos: { aid: string, title: string }[],
         minWidth: 800,
         x: rootPos.x / scale + 100,
         y: (rootPos.y + titleHeight) / scale
-    })
-    console.log(videos.length == 1 ? `/video?m=0&t=${encodeURIComponent(title)}&aid=${aid}` : `/video?m=1`);
-    
+    })  
 
     await webview.once('tauri://created', async () => {
         // 成功打开新窗口后, 给主窗口发一条事件消息

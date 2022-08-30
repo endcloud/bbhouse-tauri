@@ -43,18 +43,33 @@ const startLoading = () => {
     loadingInstance.close()
   })
 }
+const onSearch = (e: any) => {
+  if (refTitle.value === "" && refUp.value === "") {
+    store.commit("resetLiveFilter")
+  } else {
+    store.commit("doLiveFilter", { title: refTitle.value, up: refUp.value })
+  }
+}
 const refresh = () => {
-  store.dispatch('refreshLive', "蒙古上单")
+  store.dispatch('refreshLive', "陈瑞亲妈")
 }
 </script>
     
-    <template>
+<template>
   <el-row :gutter="10" justify="start" align="middle">
-    <el-col :span="12">
+    <el-col :span="16">
       <h2>
         {{  state.pageTitle  }}
         <el-button text circle icon="refresh" type="info" @click="refresh" v-if="!state.isSearch" />
       </h2>
+    </el-col>
+
+    <el-col :span="4">
+      <el-input v-model="refTitle" placeholder="过滤标题" @change="onSearch" @clear="onSearch" id="search-title"
+        clearable />
+    </el-col>
+    <el-col :span="4">
+      <el-input v-model="refUp" placeholder="过滤UP主" @change="onSearch" @clear="onSearch" id="search-up" clearable />
     </el-col>
   </el-row>
 
@@ -63,33 +78,15 @@ const refresh = () => {
     <el-image src="https://s1.hdslb.com/bfs/static/mall-c/static/img/refresh.00100b5.gif" style="width: 500px" />
   </el-row>
 
-  <el-tabs :tab-position="tabPosition" style="height: auto" v-if="!state.isSearch && !state.loading">
-    <el-tab-pane class="live-list">
-      <el-scrollbar class="live-scroll">
-        <LiveArea :live-list="state.oriList" />
-        <div style="height: 8vh"></div>
-      </el-scrollbar>
-    </el-tab-pane>
-  </el-tabs>
-
   <el-scrollbar class="live-scroll">
     <LiveArea :live-list="state.showList" />
     <el-backtop :right="100" :bottom="100" />
     <div style="height: 8vh"></div>
-
   </el-scrollbar>
 
 </template>
     
-    <style scoped lang="less">
-    .live-list {
-      //overflow-y: scroll;
-      //-webkit-overflow-scrolling: touch;
-      height: 85vh;
-    }
-    </style>
-    
-    <style lang="less">
+<style lang="less">
 .live-scroll>div {
   overflow-x: hidden;
 }

@@ -57,6 +57,7 @@ declare module '@vue/runtime-core' {
     RouterView: typeof import('vue-router')['RouterView']
     Settings: typeof import('./src/components/Settings.vue')['default']
     SplashScreen: typeof import('./src/components/SplashScreen.vue')['default']
+    Stream: typeof import('./src/components/Stream.vue')['default']
     TestMac: typeof import('./src/components/TestMac.vue')['default']
     TimeMachine: typeof import('./src/components/TimeMachine.vue')['default']
     Video: typeof import('./src/components/Video.vue')['default']

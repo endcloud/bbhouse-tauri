@@ -157,8 +157,8 @@ export const moduleDynamic: Module<StateTypeDynamic, StateTypeRoot> = {
             state.keywordUp = payload.up
 
             state.showList = state.oriList
-                .filter((item: any) => item.name.indexOf(state.keywordUp) > -1)
-                .filter((item: any) => item.title.indexOf(state.keywordTitle) > -1)
+                .filter((item: any) => item.name.toLowerCase().indexOf(state.keywordUp.toLowerCase()) > -1)
+                .filter((item: any) => item.title.toLowerCase().indexOf(state.keywordTitle.toLowerCase()) > -1)
 
             state.isSearch = true
             state.pageTitle = "过滤"

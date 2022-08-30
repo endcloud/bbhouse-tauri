@@ -91,7 +91,7 @@
                     </el-link>
                   </el-row>
                   <el-row>
-                    <el-link :href="`https://www.bilibili.com/video/av${item.param}`" target="_blank"
+                    <el-link :href="`https://live.bilibili.com/${item.room_id}`" target="_blank"
                              :underline="false">去网页
                     </el-link>
                   </el-row>
