@@ -6,14 +6,14 @@
     import ContextMenuV3 from "./ContextMenuV3.vue"
     import {ElMessage} from "element-plus/es"
     
-    interface TypeDynamic {
-      dynamicList: any[]
+    interface TypeLive {
+      liveList: any[]
     }
     
-    defineProps<TypeDynamic>()
+    defineProps<TypeLive>()
     
     const store = useStore()
-    const state = store.state.dynamic!
+    const state = store.state.live!
     const openVideoWindow = useReVideoWindow
     
     // 可能会有用的自定义右键菜单
@@ -22,27 +22,7 @@
       emitContext(e, {name: 'context-menu-1', id: [1, 2, 3]})
     // @contextmenu="openContextMenu"
     }
-    
-    const downVideo = async (aid: string) => {
-      let playData: any, playList: any[] | undefined
-    
-      try {
-        playData = await useNativeBB(aid, store.state.login?.cookie as string, false)
-        playList = useQnData(playData, store.state.settings!.player.hevc)
-      } catch (e) {
-        console.log(e)
-      }
-    
-      if (!playList || playList.length < 1) {
-        tipDownError(`${aid}`)
-        return
-      }
-    
-      const res = await useDownload(aid, playList[0].url, store.state.settings?.downloadVideoPath, "video", store.state.settings!.downloadImplIndex)
-      if (res && store.state.settings!.downloadImplIndex === 0) {
-        await useDownload(aid, useAuData(playData), store.state.settings?.downloadVideoPath, "audio", store.state.settings!.downloadImplIndex)
-      }
-    }
+  
     
     const downPic = async (aid: string, pic: string) => {
       await useDownload(aid, pic, store.state.settings?.downloadPicPath, "pic", store.state.settings!.downloadImplIndex)
@@ -62,8 +42,8 @@
     
       <el-row :gutter="20">
         <el-col
-            v-for="(item, index) in dynamicList"
-            :key="item.param"
+            v-for="(item, index) in liveList"
+            :key="item.room_id"
             :xs="24"
             :sm="8"
             :md="6"
@@ -73,7 +53,7 @@
         >
           <el-card :body-style="{ padding: '0px'}" style="margin-top: 10px" shadow="hover">
             <el-image
-                :src="item.cover+'@200w_113h'"
+                :src="item.cover_from_user+'@200w_113h'"
                 class="image"
                 :preview-src-list="state.srcList"
                 :initial-index="index"
@@ -91,11 +71,11 @@
                 <el-link
                     :underline="false"
                     target="_blank"
-                    :href="`https://space.bilibili.com/${item.mid}`"
+                    :href="`https://space.bilibili.com/${item.uid}`"
                     class="up-name">
-                  <span class="single-line">{{ item.name }}</span>
+                  <span class="single-line">{{ item.uname }}</span>
                 </el-link>
-                <time class="time">{{ useTs2Time(item.ctime) }}</time>
+                <time class="time">{{ useTs2Time(item.live_time) }}</time>
     
                 <el-popover
                     placement="top"
@@ -109,9 +89,6 @@
                   <el-row>
                     <el-link :underline="false" @click="downPic(item.param, item.cover)"><span>下载封面</span>
                     </el-link>
-                  </el-row>
-                  <el-row>
-                    <el-link :underline="false" @click="downVideo(item.param)">下载视频</el-link>
                   </el-row>
                   <el-row>
                     <el-link :href="`https://www.bilibili.com/video/av${item.param}`" target="_blank"
