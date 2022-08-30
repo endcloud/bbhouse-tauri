@@ -1,5 +1,6 @@
 import {createRouter, createWebHistory, RouteLocationNormalizedLoaded} from "vue-router"
 import Home from './components/Home.vue'
+import Live from './components/Live.vue'
 import TimeMachine from './components/TimeMachine.vue'
 import Video from './components/Video.vue'
 import Login from './components/Login.vue'
@@ -26,6 +27,7 @@ const btn = {
 const routes = [
     {name: "index", path: '/', component: Home, props: { readLocal: true }},
     {name: "home", path: '/home', component: Home, props: (route: RouteLocationNormalizedLoaded) => ({ readLocal: (Boolean)(route.params.local) })},
+    {name: "live", path: '/live', component: Live},
     {name: "time", path: '/time_machine', component: TimeMachine},
     {name: "settings", path: '/settings', component: Settings},
     {name: "login", path: '/login', component: Login},

@@ -1,8 +1,9 @@
 import {InjectionKey} from 'vue'
 import {createStore, Store, useStore as baseUseStore} from 'vuex'
 import {
-    moduleDynamic,
+    moduleDynamic, moduleLive,
     moduleHome, moduleLogin, moduleSettings, moduleVideo,
+    StateTypeLive,
     StateTypeDynamic,
     StateTypeHome,
     StateTypeLogin,
@@ -19,10 +20,11 @@ import {ElMessageBox} from "element-plus"
 
 export interface StateTypeRoot {
     count: number,
-    index: "home" | "time_machine" | "settings" | "about" | "login" | "404",
+    index: "home" | "live" | "time_machine" | "settings" | "about" | "login" | "404",
     platform: string,
     scale: number,
     theme: number,
+    live?: StateTypeLive,
     dynamic?: StateTypeDynamic,
     home?: StateTypeHome,
     video?: StateTypeVideo,
@@ -106,6 +108,7 @@ export const store = createStore<StateTypeRoot>({
     },
     modules: {
         dynamic: moduleDynamic,
+        live: moduleLive,
         home: moduleHome,
         video: moduleVideo,
         login: moduleLogin,

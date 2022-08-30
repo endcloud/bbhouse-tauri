@@ -48,6 +48,8 @@ declare module '@vue/runtime-core' {
     ElTooltip: typeof import('element-plus/es')['ElTooltip']
     HelloWorld: typeof import('./src/components/HelloWorld.vue')['default']
     Home: typeof import('./src/components/Home.vue')['default']
+    Live: typeof import('./src/components/Live.vue')['default']
+    LiveArea: typeof import('./src/components/LiveArea.vue')['default']
     Login: typeof import('./src/components/Login.vue')['default']
     NavMenu: typeof import('./src/components/NavMenu.vue')['default']
     OpenRepo: typeof import('./src/components/OpenRepo.vue')['default']

@@ -180,7 +180,7 @@ export const moduleDynamic: Module<StateTypeDynamic, StateTypeRoot> = {
         async getData({commit, state, rootState}) {
             console.log("开始获取动态数据")
             const pages = [1, 2, 3]
-
+            console.log("accesskey:{}", rootState.login!.token);
             for (const page of pages) {
                 const res: any = await fetch(state.initUrl, {
                     method: 'GET',
