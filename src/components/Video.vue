@@ -70,7 +70,7 @@ const flvHandle = (video: HTMLVideoElement, player: DPlayer) => {
     }
   })
 }
-const videoOption = (vList: any[], pic: string): DPlayerVideo => {
+const videoOption = (vList: any[], pic: string): DPlayerVideo => { 
   const qn = vList.map((v, index) => v.id === store.state.settings!.defaultQn ? index : -1).find(i => i !== -1) ??
       vList.map((v, index) => v.id < store.state.settings!.defaultQn ? index : -1).find(i => i !== -1) ?? 0
   timesThreshold = vList[qn].id >= 120 ? 4 : 3
@@ -218,10 +218,20 @@ onMounted(
 
       const playData = await useNativeBB(route.query.aid as string, store.state.login!.cookie, flv, store.state.settings!.defaultQn)
       const playList = useQnData(playData, store.state.settings!.player.hevc)
-      console.log(playList)
+      console.log("playList", playList)
+      console.log("playData", playData)
       initDp(route.query.aid as string, playData.cid, playList!, playData.baseData.pic)
-      ap = flv ? undefined : useAPlayer(dp, useAuData(playData), route.query.t as string)
-      useDPlayerReg(dp, ap)
+
+      if(!isNaN(Number(route.query.aid))){
+        //bu是直播
+        ap = flv ? undefined : useAPlayer(dp, useAuData(playData), route.query.t as string)
+        useDPlayerReg(dp, ap)
+        // 加载评论
+      await store.dispatch("loadComment")
+      }
+
+      // ap = flv ? undefined : useAPlayer(dp, useAuData(playData), route.query.t as string)
+      // useDPlayerReg(dp, ap)
 
       // 注册全局事件, 添加新的视频到播放列表
       const unlisten = await listen('new-video', (event) => {
@@ -242,8 +252,6 @@ onMounted(
           nextPlay()
         }
       })
-      // 加载评论
-      await store.dispatch("loadComment")
     }
 )
 

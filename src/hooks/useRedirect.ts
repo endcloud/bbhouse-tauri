@@ -16,7 +16,7 @@ export const useReVideoWindow = async (videos: { aid: string, title: string }[],
     const title = videos[0].title
     const status = await useVideoWindowState()
     console.log("当前Video窗口", status)
-
+    console.log("aid", aid)
     if (status) {
         if (videos.length > 1) {
             await emit("new-videos", videos).then(async () => {

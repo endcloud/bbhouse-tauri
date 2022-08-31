@@ -63,7 +63,7 @@
               <el-link
                   target="_blank"
                   :underline="false"
-                  @click="openVideoWindow([{aid: `${item.param}`, title: item.title}], store.state.scale)">
+                  @click="openVideoWindow([{aid: `live${item.room_id}`, title: item.title}], store.state.scale)">
                 <span class="title">{{ item.title }}</span>
               </el-link>
     

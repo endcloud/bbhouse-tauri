@@ -27,7 +27,7 @@ const getView = async (aid: string, cookie: string): Promise<any> => {
             aid: aid,
         }
     })
-    console.log(res.data.data)
+    console.log("getView", res.data.data)
     return res.data.data
 }
 /**
@@ -38,6 +38,40 @@ const getView = async (aid: string, cookie: string): Promise<any> => {
  * @param qn
  */
 export const useNativeBB = async (aid: string, cookie: string, flv: boolean = false, qn: number = 120): Promise<any> => {
+    if(isNaN(Number(aid))){
+        //是直播
+        const rid = aid.slice(4,)
+        const liveUrl = "https://api.live.bilibili.com/room/v1/Room/playUrl"
+        const liveRes: any = await fetch(liveUrl, {
+            method: 'GET',
+            timeout: 10,
+            headers: {
+                "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.4 Safari/605.1.15",
+                "Referer": "https://www.bilibili.com/video/av" + aid,
+                "Origin": "https://www.bilibili.com",
+                "Host": "api.bilibili.com",
+                "Accept": "*/*",
+                "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8,zh-TW;q=0.7",
+                "Accept-Encoding": "gzip, deflate, br",
+                "Connection": "keep-alive",
+                "Cookie": cookie,
+            },
+            query: {
+                cid: rid,
+                platform: "",
+                quality: "4",
+                qn: "",
+            }
+        })
+        liveRes.data.data.cid = rid
+        liveRes.data.data.flvMode = true
+        liveRes.data.data.baseData = {pic : ""}
+        console.log("liveRes",liveRes.data.data)
+        return liveRes.data.data
+    }
+
+
+
     const baseData = await getView(aid, cookie) // 在网络正常的情况下, 无论视频状态, 这里应该是一个返回对象
     if (flv && qn > 120) qn = 120 // flv 模式下, qn 最高只能是 120，超过会回落到 1080P 的80，接口限制
 
@@ -81,7 +115,7 @@ export const useNativeBB = async (aid: string, cookie: string, flv: boolean = fa
                 fnval: "4048"
             }
     })
-    console.log(res.data.data)
+    console.log("useNativeBB",res.data.data)
     res.data.data.cid = cid
     res.data.data.baseData = baseData
     res.data.data.flvMode = flv
@@ -116,6 +150,17 @@ export const usePlayUrl = async (aid: string, cookie: string, flv: boolean = fal
  */
 export const useQnData = (playData: any, hevc: boolean = false) => {
     console.log("HEVC", hevc)
+
+    if(playData.hasOwnProperty("current_quality")) {
+        //是直播
+        return playData.durl.map(({order, url}: any) => ({
+            id: 80,
+            url: url,
+            type: "customFlv",
+            name: "路线"+order
+        }))
+    }
+
     // 获得该视频拥有的清晰度列表, 固定返回
     const qn: { name: string, value: number }[] = playData.accept_description.map((qn_des: string, index: number) => ({
         name: qn_des,
