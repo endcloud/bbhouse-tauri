@@ -1,6 +1,7 @@
 import {Module} from "vuex"
 import {StateTypeRoot} from "../store"
 import {fetch} from "@tauri-apps/api/http"
+import { pa } from "element-plus/es/locale"
 
 export interface StateTypeVideo {
     count: number,
@@ -30,6 +31,8 @@ export const moduleVideo: Module<StateTypeVideo, StateTypeRoot> = {
             state.title = state.playList[payload].title
         },
         add2PlayList(state, payload: any) {
+            console.log("state",state,"payload",payload);
+            
             if (state.playList.map(video => video.aid).includes(payload.aid)) return
 
             state.playList.push(payload)

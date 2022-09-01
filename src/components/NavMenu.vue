@@ -33,7 +33,7 @@ const store = useStore()
         <template #title>首页</template>
       </el-menu-item>
       <el-menu-item index="live">
-        <el-icon><Promotion /></el-icon>
+        <el-icon><video-camera-filled /></el-icon>
         <template #title>直播</template>
       </el-menu-item>
       <el-menu-item index="time_machine">

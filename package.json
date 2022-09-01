@@ -23,6 +23,7 @@
     "element-plus": "^2.2.12",
     "flv.js": "^1.6.2",
     "goldvideo-player": "^1.0.2",
+    "hls.js": "^1.2.1",
     "qrcode.vue": "^3.3.3",
     "vue": "^3.2.37",
     "vue-router": "4",

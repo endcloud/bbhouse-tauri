@@ -127,7 +127,7 @@ export const moduleLive: Module<StateTypeLive, StateTypeRoot> = {
             state.isSearch = true
             state.pageTitle = "过滤"
             state.srcListBak = [...state.srcList]
-            state.srcList = state.showList.map(ele => ele.cover)
+            state.srcList = state.showList.map(ele => ele.keyframe)
         },
         resetLiveFilter(state) {
             if (state.showList.length === state.oriList.length) return
@@ -189,7 +189,7 @@ export const moduleLive: Module<StateTypeLive, StateTypeRoot> = {
             state.oriList = tmp
             state.process = 100
             state.showList = state.oriList
-            state.srcList = state.oriList
+            state.srcList = state.showList.map(ele => ele.keyframe)
             state.loading = false
         },
         async refreshLive({ state, dispatch }) {

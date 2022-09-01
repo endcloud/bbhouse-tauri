@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import flvjs from "flv.js"
+import hlsjs from "hls.js"
 // @ts-ignore
 import DPlayer, {DPlayerDanmaku, DPlayerEvents, DPlayerOptions, DPlayerVideo} from 'dplayer'
 import {onMounted, ref} from "vue"
@@ -8,6 +9,7 @@ import {useStore} from "../vuex"
 import {useAPlayer, useAuData, useDownload, useDPlayerReg, useNativeBB, useQnData, useTs2Time} from "../hooks"
 import {appWindow, PhysicalSize} from "@tauri-apps/api/window"
 import {listen} from "@tauri-apps/api/event"
+import Hls from "hls.js"
 
 const route = useRoute()
 const store = useStore()
@@ -70,9 +72,16 @@ const flvHandle = (video: HTMLVideoElement, player: DPlayer) => {
     }
   })
 }
+const hlsHandle = (video: HTMLVideoElement, player: DPlayer) => {
+  const hls = new Hls()
+  hls.loadSource(video.src);
+  hls.attachMedia(video);
+}
+
 const videoOption = (vList: any[], pic: string): DPlayerVideo => { 
   const qn = vList.map((v, index) => v.id === store.state.settings!.defaultQn ? index : -1).find(i => i !== -1) ??
       vList.map((v, index) => v.id < store.state.settings!.defaultQn ? index : -1).find(i => i !== -1) ?? 0
+
   timesThreshold = vList[qn].id >= 120 ? 4 : 3
   return {
     // url: 'http://qiniu-video.cdn.bcebos.com/test.mp4',
@@ -82,6 +91,7 @@ const videoOption = (vList: any[], pic: string): DPlayerVideo => {
     url: vList[0].url,
     customType: {
       customFlv: flvHandle,
+      customHls: hlsHandle,
     },
   }
 }
@@ -101,6 +111,9 @@ const danmakuOption = (aid: string, cid: string): DPlayerDanmaku => {
 }
 
 const initDp = (aid: string, cid: string, vList: any[], pic: string) => {
+
+  console.log("vList",vList);
+  
   const options: DPlayerOptions = {
     container: document.getElementById('dplayer'),
     screenshot: false,
@@ -165,7 +178,7 @@ const initDp = (aid: string, cid: string, vList: any[], pic: string) => {
 }
 const nextPlay = async () => {
   const playData = await useNativeBB(state.playList[state.playIndex].aid, store.state.login!.cookie, flv, store.state.settings!.defaultQn)
-  const playList = useQnData(playData, store.state.settings!.player.hevc)
+  const playList = await useQnData(playData, store.state.settings!.player.hevc)
 
   console.log(playList)
 
@@ -217,25 +230,24 @@ onMounted(
       })
 
       const playData = await useNativeBB(route.query.aid as string, store.state.login!.cookie, flv, store.state.settings!.defaultQn)
-      const playList = useQnData(playData, store.state.settings!.player.hevc)
+      const playList = await useQnData(playData, store.state.settings!.player.hevc)
       console.log("playList", playList)
       console.log("playData", playData)
       initDp(route.query.aid as string, playData.cid, playList!, playData.baseData.pic)
 
-      if(!isNaN(Number(route.query.aid))){
-        //bu是直播
-        ap = flv ? undefined : useAPlayer(dp, useAuData(playData), route.query.t as string)
-        useDPlayerReg(dp, ap)
+
+      ap = flv ? undefined : useAPlayer(dp, useAuData(playData), route.query.t as string)
+      useDPlayerReg(dp, ap)
         // 加载评论
-      await store.dispatch("loadComment")
-      }
+      
+
 
       // ap = flv ? undefined : useAPlayer(dp, useAuData(playData), route.query.t as string)
       // useDPlayerReg(dp, ap)
 
       // 注册全局事件, 添加新的视频到播放列表
       const unlisten = await listen('new-video', (event) => {
-        const temp = JSON.parse(event.payload as string)
+        const temp = JSON.parse(event.payload as string)   
         store.commit("add2PlayList", temp)
       })
       // 注册全局事件, 批量添加视频到播放列表
@@ -252,6 +264,7 @@ onMounted(
           nextPlay()
         }
       })
+      await store.dispatch("loadComment")
     }
 )
 

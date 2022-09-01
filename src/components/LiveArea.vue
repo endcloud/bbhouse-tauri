@@ -63,7 +63,7 @@
               <el-link
                   target="_blank"
                   :underline="false"
-                  @click="openVideoWindow([{aid: `live${item.room_id}`, title: item.title}], store.state.scale)">
+                  @click="openVideoWindow([{aid: `live${item.room_id}`, title: `【直播】${item.title}`}], store.state.scale)">
                 <span class="title">{{ item.title }}</span>
               </el-link>
     
@@ -85,11 +85,6 @@
                   <template #reference>
                     <el-button text circle icon="MoreFilled" class="ext-menu" @click=""></el-button>
                   </template>
-    
-                  <el-row>
-                    <el-link :underline="false" @click="downPic(item.param, item.cover)"><span>下载封面</span>
-                    </el-link>
-                  </el-row>
                   <el-row>
                     <el-link :href="`https://live.bilibili.com/${item.room_id}`" target="_blank"
                              :underline="false">去网页
