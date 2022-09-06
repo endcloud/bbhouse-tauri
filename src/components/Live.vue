@@ -53,17 +53,33 @@ const onSearch = (e: any) => {
 const refresh = () => {
   store.dispatch('refreshLive', "陈瑞亲妈")
 }
+const iGetAll = () => {
+  store.dispatch("watchAllLive")
+}
 </script>
     
 <template>
   <el-row :gutter="10" justify="start" align="middle">
-    <el-col :span="16">
+    <el-col :span="12">
       <h2>
         {{  state.pageTitle  }}
         <el-button text circle icon="refresh" type="info" @click="refresh" v-if="!state.isSearch" />
       </h2>
     </el-col>
-
+    <el-col :span="4" style="text-align: right; padding-right: 10px">
+      <el-dropdown v-if="!state.isSearch">
+        <span style="font-size: 16px; cursor: pointer; user-select: none">
+          🥰
+        </span>
+        <template #dropdown>
+          <el-dropdown-menu>
+            <el-dropdown-item>
+              <el-link :underline="false" @click="iGetAll">我全都要</el-link>
+            </el-dropdown-item>
+          </el-dropdown-menu>
+        </template>
+      </el-dropdown>
+    </el-col>
     <el-col :span="4">
       <el-input v-model="refTitle" placeholder="过滤标题" @change="onSearch" @clear="onSearch" id="search-title"
         clearable />

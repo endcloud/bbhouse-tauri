@@ -119,6 +119,7 @@ const initDp = (aid: string, cid: string, vList: any[], pic: string) => {
     screenshot: false,
     hotkey: true,
     airplay: true,
+    // live: true,
     video: videoOption(vList, pic),
     danmaku: danmakuOption(aid, cid),
     preload: "metadata",
@@ -177,7 +178,7 @@ const initDp = (aid: string, cid: string, vList: any[], pic: string) => {
 
 }
 const nextPlay = async () => {
-  const playData = await useNativeBB(state.playList[state.playIndex].aid, store.state.login!.cookie, flv, store.state.settings!.defaultQn)
+  const playData = await useNativeBB(state.playList[state.playIndex].aid as string, store.state.login!.cookie, flv, store.state.settings!.defaultQn)
   const playList = await useQnData(playData, store.state.settings!.player.hevc)
 
   console.log(playList)

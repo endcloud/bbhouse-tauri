@@ -185,9 +185,10 @@ export const moduleLive: Module<StateTypeLive, StateTypeRoot> = {
             for(let i in statusInfo.data.data){
                 tmp.push(statusInfo.data.data[i]);
               }
-            console.log(tmp);
+            console.log("tmp",tmp);
             state.oriList = tmp
             state.process = 100
+            // state.showList = state.oriList.map(ele => ele.room_id = "live"+ele.room_id)
             state.showList = state.oriList
             state.srcList = state.showList.map(ele => ele.keyframe)
             state.loading = false
@@ -196,6 +197,20 @@ export const moduleLive: Module<StateTypeLive, StateTypeRoot> = {
             state.loading = true
             state.oriList = []
             await dispatch("getLiveData")
+        },
+        async watchAllLive({state, rootState}) {
+            if (!await useVideoWindowState()) {
+                await message("请先播放一个直播来打开直播窗口", {title: "异常", type: "error"})
+                return
+            }
+            const isConfirm = await confirm("此操作将会清空当前播放列表\n然后添加全部直播", {title: "我全都要", type: "warning"})
+
+            if (!isConfirm) return
+
+            const all = state.oriList.map(ele => ({aid: 'live'+ele.room_id, title: '【直播】'+ele.title}))
+            console.log("all", all);
+            
+            await useReVideoWindow(all, rootState.scale)
         }
     }
 }

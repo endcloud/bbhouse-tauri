@@ -192,28 +192,10 @@ export const useQnData = async (playData: any, hevc: boolean = false) => {
 
     if (playData.hasOwnProperty("current_quality")) {
         //是直播
-
         var ret = new Array()
-        // ret.push(...playData.durl.map(({url, order}: any) => ({
-        //     id: 80,
-        //     url: url,
-        //     type: "customFlv",
-        //     name: "路线"+order
-        // })))
-        // playData.accept_quality.map(async (ac: any) => {
-        //     ret.push(...await getLiveUrl(playData.cid, ac, playData.cookie))
-        // })
         for (var i = 0; i < playData.accept_quality.length; i++) {
             ret.push(...await getLiveUrl(playData.cid, playData.quality_description[i].qn.toString(), playData.cookie))
         }
-        // ret.push(...await getLiveUrl(playData.cid, "4", playData.cookie))
-        // ret.push(...await getLiveUrl(playData.cid, "3", playData.cookie))
-        // ret.push(...playData.durl.map(({url, order}: any) => ({
-        //     id: 80,
-        //     url: url,
-        //     type: "customFlv",
-        //     name: "路线"+order
-        // })))
         return ret
     }
 
