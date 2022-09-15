@@ -120,6 +120,7 @@
   dependencies:
     "defer-to-connect" "^2.0.0"
 
+
 "@tauri-apps/api@^1.0.2":
   "integrity" "sha512-yuNW0oeJ1/ZA7wNF1KgxhHrSu5viPVzY/UgUczzN5ptLM8dH15Juy5rEGkoHfeXGju90Y/l22hi3BtIrp/za+w=="
   "resolved" "https://registry.npmjs.org/@tauri-apps/api/-/api-1.0.2.tgz"
