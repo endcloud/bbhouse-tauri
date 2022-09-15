@@ -606,10 +606,10 @@
   "resolved" "https://registry.npmmirror.com/base64-js/-/base64-js-1.5.1.tgz"
   "version" "1.5.1"
 
-"bilibili-live-ws@^6.2.1":
-  "integrity" "sha512-oiFA7msbedTPB0ujDXFFxRWLso+QVgC+yXfAeBb6AOx9Azijskwr8/ikpmiYHV2NaFemTfVPkPT+CWn+LARYQA=="
-  "resolved" "https://registry.npmmirror.com/bilibili-live-ws/-/bilibili-live-ws-6.2.1.tgz"
-  "version" "6.2.1"
+"bilibili-live-ws@^6.2.0":
+  "integrity" "sha512-3CfljK7mFnaQWMaPOI5NL14xUgr6qicTQ5T+ktRAcQpKdlPPpGVjz/lpv/ksQ0GnBy6XHomr9UI2kkfUu8iG/g=="
+  "resolved" "https://registry.npmmirror.com/bilibili-live-ws/-/bilibili-live-ws-6.2.0.tgz"
+  "version" "6.2.0"
   dependencies:
     "array-flat-polyfill" "^1.0.1"
     "isomorphic-ws" "^4.0.1"

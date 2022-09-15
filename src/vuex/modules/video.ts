@@ -49,6 +49,11 @@ export const moduleVideo: Module<StateTypeVideo, StateTypeRoot> = {
     },
     actions: {
         async loadComment({state, rootState}, payload?: number) {
+            console.log("state.playList[state.playIndex].aid",state.playList[state.playIndex].aid);
+            
+            if(isNaN(Number(state.playList[state.playIndex].aid))){
+                return
+            }
             state.commentPageIndex = payload ? payload : 1
 
             const resp: any = await fetch("https://api.bilibili.com/x/v2/reply", {

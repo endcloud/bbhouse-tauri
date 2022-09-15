@@ -2,14 +2,17 @@
 import flvjs from "flv.js"
 import hlsjs from "hls.js"
 // @ts-ignore
-import DPlayer, {DPlayerDanmaku, DPlayerEvents, DPlayerOptions, DPlayerVideo} from 'dplayer'
-import {onMounted, ref} from "vue"
-import {useRoute} from "vue-router"
-import {useStore} from "../vuex"
-import {useAPlayer, useAuData, useDownload, useDPlayerReg, useNativeBB, useQnData, useTs2Time} from "../hooks"
-import {appWindow, PhysicalSize} from "@tauri-apps/api/window"
-import {listen} from "@tauri-apps/api/event"
+import DPlayer, { DPlayerAPIBackend, DPlayerDanmakuItem, DPlayerDanmaku, DPlayerEvents, DPlayerOptions, DPlayerVideo } from 'dplayer'
+import { onMounted, onBeforeUnmount, ref } from "vue"
+import { useRoute } from "vue-router"
+import { useStore } from "../vuex"
+import { useAPlayer, useAuData, useDownload, useDPlayerReg, useNativeBB, useQnData, useTs2Time } from "../hooks"
+import { appWindow, PhysicalSize } from "@tauri-apps/api/window"
+import { listen } from "@tauri-apps/api/event"
 import Hls from "hls.js"
+import { read } from "fs"
+import { KeepLiveWS, LiveWS } from "bilibili-live-ws"
+import { Live } from "bilibili-live-ws/src/common"
 
 const route = useRoute()
 const store = useStore()
@@ -22,7 +25,8 @@ let flvPlayer: flvjs.Player // 以上均应为唯一实例, 需要手动销毁�
 let lastDecodedFrame = 0 // 已经解码(播放)的帧数
 let bufferGetTimes = 0 // seek时请求到缓存buffer的次数, >0即表示已经可以播放
 let timesThreshold = 3 // 手动跳帧的阈值， 高画质视频会在videoOption()中提升到4
-
+let isLive = false
+let live: KeepLiveWS
 // const flv = false // 测试用
 const flv = !store.state.platform.includes("windows")
 
@@ -78,9 +82,9 @@ const hlsHandle = (video: HTMLVideoElement, player: DPlayer) => {
   hls.attachMedia(video);
 }
 
-const videoOption = (vList: any[], pic: string): DPlayerVideo => { 
+const videoOption = (vList: any[], pic: string): DPlayerVideo => {
   const qn = vList.map((v, index) => v.id === store.state.settings!.defaultQn ? index : -1).find(i => i !== -1) ??
-      vList.map((v, index) => v.id < store.state.settings!.defaultQn ? index : -1).find(i => i !== -1) ?? 0
+    vList.map((v, index) => v.id < store.state.settings!.defaultQn ? index : -1).find(i => i !== -1) ?? 0
 
   timesThreshold = vList[qn].id >= 120 ? 4 : 3
   return {
@@ -112,8 +116,8 @@ const danmakuOption = (aid: string, cid: string): DPlayerDanmaku => {
 
 const initDp = (aid: string, cid: string, vList: any[], pic: string) => {
 
-  console.log("vList",vList);
-  
+  console.log("vList", vList);
+
   const options: DPlayerOptions = {
     container: document.getElementById('dplayer'),
     screenshot: false,
@@ -149,12 +153,72 @@ const initDp = (aid: string, cid: string, vList: any[], pic: string) => {
       }
     ]
   }
-  dp = new DPlayer(options)
+
+  const liveOptions: DPlayerOptions = {
+    container: document.getElementById('dplayer'),
+    screenshot: false,
+    hotkey: true,
+    airplay: true,
+    // live: true,
+    video: videoOption(vList, pic),
+    preload: "metadata",
+    autoplay: true,
+    danmaku: {
+      id: `1#1`,
+      // api: 'https://api.prprpr.me/dplayer/',
+      api: 'https://dp.endcloud.cn/',
+      // addition: ["https://dplayer.alone88.cn/v3/bilibili?aid=BV1BZ4y1w77m&cid=BV1BZ4y1w77m"],
+      // addition: [`https://dp.endcloud.cn/v3/bilibili?aid=1&cid=1`],
+      // addition: [`https://dp.endcloud.cn/v3/bilibili?aid=1&cid=1`],
+      // user: 'tauri-bb_house',//弹幕作者
+      // bottom: "50%",
+      // unlimited: false,
+      // // @ts-ignore
+      // maximum: 1000
+    },
+    apiBackend: {
+      read: function (options) {
+        console.log('正在连接直播弹幕服务器', aid);
+        const rid = aid.slice(4,)
+        live = new KeepLiveWS(Number(rid))
+        live.on('open', () => {
+          console.log('已连接直播弹幕服务器', rid);
+        })
+        // 弹幕
+        // live.on('DANMU_MSG', ({ info }) => {
+        //   console.log(info);
+        // });
+        live.on('DANMU_MSG', async ({ info: [[, , , color], message, [uid, uname, isOwner /*, isVip, isSvip*/]] }) => {
+          const danmaku = {
+            type: 'right',
+            uid,
+            uname,
+            color: color.toString(16),
+            text: message
+          };
+          // addDanmaku(danmaku);
+          console.log(danmaku);
+          dp.danmaku.draw(danmaku)
+        });
+        options.success()
+      },
+      send: function (options) {
+        console.log('Pretend to send danmaku via WebSocket', options.data);
+        options.success();
+      },
+    },
+  }
+
+  if (isNaN(Number(aid))) {
+    dp = new DPlayer(liveOptions)
+  } else {
+    dp = new DPlayer(options)
+  }
 
   dp.on(<DPlayerEvents>'fullscreen', async () => {
     const size = await appWindow.innerSize()
-    await store.commit("setWindowSize", {width: size.width, height: size.height})
-    console.log({width: size.width, height: size.height})
+    await store.commit("setWindowSize", { width: size.width, height: size.height })
+    console.log({ width: size.width, height: size.height })
     await appWindow.setFullscreen(true)
   })
   dp.on(<DPlayerEvents>'fullscreen_cancel', async () => {
@@ -204,6 +268,11 @@ const nextPlay = async () => {
       flvPlayer.destroy()
     }
     dp.destroy()
+    if (isLive) {
+      live.close(),
+      console.log("与弹幕服务器断开连接"),
+      isLive = false
+    }
     initDp(state.playList[state.playIndex].aid, playData.cid, playList!, playData.baseData.pic)
 
     // if (ap) {
@@ -222,51 +291,61 @@ const nextPlay = async () => {
   console.log("ok", state.title)
 }
 
+onBeforeUnmount(() => {
+  if(isLive) {
+    live.close
+  }
+})
+
 onMounted(
-    async () => {
-      console.log(route.query,)
-      store.commit("add2PlayList", {
-        title: route.query.t,
-        aid: route.query.aid
-      })
+  async () => {
+    console.log(route.query,)
+    store.commit("add2PlayList", {
+      title: route.query.t,
+      aid: route.query.aid
+    })
 
-      const playData = await useNativeBB(route.query.aid as string, store.state.login!.cookie, flv, store.state.settings!.defaultQn)
-      const playList = await useQnData(playData, store.state.settings!.player.hevc)
-      console.log("playList", playList)
-      console.log("playData", playData)
-      initDp(route.query.aid as string, playData.cid, playList!, playData.baseData.pic)
-
-
-      ap = flv ? undefined : useAPlayer(dp, useAuData(playData), route.query.t as string)
-      useDPlayerReg(dp, ap)
-        // 加载评论
-      
-
-
-      // ap = flv ? undefined : useAPlayer(dp, useAuData(playData), route.query.t as string)
-      // useDPlayerReg(dp, ap)
-
-      // 注册全局事件, 添加新的视频到播放列表
-      const unlisten = await listen('new-video', (event) => {
-        const temp = JSON.parse(event.payload as string)   
-        store.commit("add2PlayList", temp)
-      })
-      // 注册全局事件, 批量添加视频到播放列表
-      await listen('new-videos', (event) => {
-        const temp = JSON.parse(event.payload as string)
-        store.commit("setPlayList", temp)
-        nextPlay()
-      })
-      // 注册窗口事件, 自动播放下一个视频
-      await appWindow.listen('next-video', (event) => {
-        if (state.playIndex + 1 < state.playList.length) {
-          console.log("自动播放下一个视频")
-          store.commit('setPlayIndex', state.playIndex + 1)
-          nextPlay()
-        }
-      })
-      await store.dispatch("loadComment")
+    const playData = await useNativeBB(route.query.aid as string, store.state.login!.cookie, flv, store.state.settings!.defaultQn)
+    const playList = await useQnData(playData, store.state.settings!.player.hevc)
+    console.log("playList", playList)
+    console.log("playData", playData)
+    //判断直播
+    if (isNaN(Number(route.query.aid))) {
+      isLive = true
     }
+    initDp(route.query.aid as string, playData.cid, playList!, playData.baseData.pic)
+
+
+    ap = flv ? undefined : useAPlayer(dp, useAuData(playData), route.query.t as string)
+    useDPlayerReg(dp, ap)
+    // 加载评论
+
+
+
+    // ap = flv ? undefined : useAPlayer(dp, useAuData(playData), route.query.t as string)
+    // useDPlayerReg(dp, ap)
+
+    // 注册全局事件, 添加新的视频到播放列表
+    const unlisten = await listen('new-video', (event) => {
+      const temp = JSON.parse(event.payload as string)
+      store.commit("add2PlayList", temp)
+    })
+    // 注册全局事件, 批量添加视频到播放列表
+    await listen('new-videos', (event) => {
+      const temp = JSON.parse(event.payload as string)
+      store.commit("setPlayList", temp)
+      nextPlay()
+    })
+    // 注册窗口事件, 自动播放下一个视频
+    await appWindow.listen('next-video', (event) => {
+      if (state.playIndex + 1 < state.playList.length) {
+        console.log("自动播放下一个视频")
+        store.commit('setPlayIndex', state.playIndex + 1)
+        nextPlay()
+      }
+    })
+    await store.dispatch("loadComment")
+  }
 )
 
 const clickTab = (e: any) => {
@@ -286,20 +365,15 @@ const setCommentPage = async (e: number) => {
 <template>
 
   <div class="mainArea">
-    <div id="dplayer" class="d-player"/>
-    <div id="aplayer" class="a-player" v-show="false"/>
+    <div id="dplayer" class="d-player" />
+    <div id="aplayer" class="a-player" v-show="false" />
     <el-tabs v-model="activeName" tab-position="top" class="extArea" type="border-card">
       <el-tab-pane label="播放列表" name="0">
         <el-scrollbar height="90vh">
           <div class="playList">
-            <el-tooltip
-                v-for="(video, index) in state.playList"
-                effect="light"
-                :content="video.title"
-                placement="left"
-            >
-              <div class="playListItem" :id="`${index}`"
-                   :class="state.playIndex === index ? `isPlaying` : ``" @click="clickTab">
+            <el-tooltip v-for="(video, index) in state.playList" effect="light" :content="video.title" placement="left">
+              <div class="playListItem" :id="`${index}`" :class="state.playIndex === index ? `isPlaying` : ``"
+                @click="clickTab">
                 {{ `${index + 1}. ${video.title}` }}
               </div>
             </el-tooltip>
@@ -308,19 +382,15 @@ const setCommentPage = async (e: number) => {
       </el-tab-pane>
       <el-tab-pane label="评论区" name="1">
         <el-pagination layout="prev, pager, next" style="width: 100%; justify-content: center;"
-                       :total="state.commentPageData.count" :page-size="state.commentPageData.size"
-                       :current-page="state.commentPageIndex" @current-change="setCommentPage"
-                       :hide-on-single-page="true" :pager-count="5" small/>
+          :total="state.commentPageData.count" :page-size="state.commentPageData.size"
+          :current-page="state.commentPageIndex" @current-change="setCommentPage" :hide-on-single-page="true"
+          :pager-count="5" small />
         <el-scrollbar height="90vh">
           <div class="grid comment" v-for="(comment, index) in state.comments" :id="`${index}`">
             <el-avatar :src="comment.member.avatar" :size="40" class="mem-avatar"></el-avatar>
             <span class="mem-name single-line">{{ comment.member.uname }}</span>
             <span class="time single-line">{{ useTs2Time(comment.ctime) }}</span>
-            <el-tooltip
-                effect="light"
-                :content="comment.content.message"
-                placement="bottom-end"
-            >
+            <el-tooltip effect="light" :content="comment.content.message" placement="bottom-end">
               <span class="content">{{ comment.content.message }}</span>
             </el-tooltip>
           </div>
@@ -485,7 +555,7 @@ div.playList {
   cursor: pointer;
 }
 
-.playListItem + .playListItem {
+.playListItem+.playListItem {
   margin-top: 10px;
 }
 
