@@ -115,7 +115,10 @@ const danmakuOption = (aid: string, cid: string): DPlayerDanmaku => {
 }
 
 const initDp = (aid: string, cid: string, vList: any[], pic: string) => {
-
+  //判断直播
+  if (isNaN(Number(route.query.aid))) {
+    isLive = true
+  }
   console.log("vList", vList);
 
   const options: DPlayerOptions = {
@@ -270,8 +273,8 @@ const nextPlay = async () => {
     dp.destroy()
     if (isLive) {
       live.close(),
-      console.log("与弹幕服务器断开连接"),
-      isLive = false
+        console.log("与弹幕服务器断开连接"),
+        isLive = false
     }
     initDp(state.playList[state.playIndex].aid, playData.cid, playList!, playData.baseData.pic)
 
@@ -292,7 +295,7 @@ const nextPlay = async () => {
 }
 
 onBeforeUnmount(() => {
-  if(isLive) {
+  if (isLive) {
     live.close
   }
 })
@@ -309,10 +312,7 @@ onMounted(
     const playList = await useQnData(playData, store.state.settings!.player.hevc)
     console.log("playList", playList)
     console.log("playData", playData)
-    //判断直播
-    if (isNaN(Number(route.query.aid))) {
-      isLive = true
-    }
+
     initDp(route.query.aid as string, playData.cid, playList!, playData.baseData.pic)
 
 
