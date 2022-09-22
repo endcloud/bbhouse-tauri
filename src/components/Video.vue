@@ -192,10 +192,8 @@ const initDp = (aid: string, cid: string, vList: any[], pic: string) => {
         //   console.log(info);
         // });
         live.on('DANMU_MSG', async ({ info: [[, , , color], message, [uid, uname, isOwner /*, isVip, isSvip*/]] }) => {
-          const danmaku = {
+          const danmaku:DPlayerDanmakuItem = {
             type: 'right',
-            uid,
-            uname,
             color: color.toString(16),
             text: message
           };
