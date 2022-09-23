@@ -164,7 +164,7 @@ const initDp = (aid: string, cid: string, vList: any[], pic: string) => {
     screenshot: false,
     hotkey: true,
     airplay: true,
-    live: isHls ? false : true,
+    // live: isHls ? false : true,
     video: videoOption(vList, pic),
     preload: "metadata",
     autoplay: true,
@@ -264,8 +264,10 @@ const nextPlay = async () => {
     console.log("当前播放器不存在aplayer")
   }
 
+  var isHls = store.state.settings!.player.hls
+
   try {
-    if (flvPlayer) {
+    if (flv && flvPlayer) {
       flvPlayer.unload()
       flvPlayer.detachMediaElement()
       flvPlayer.destroy()
@@ -297,6 +299,7 @@ const nextPlay = async () => {
 onBeforeUnmount(() => {
   if (isLive) {
     live.close
+    isLive = false
   }
 })
 
