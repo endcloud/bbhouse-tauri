@@ -156,13 +156,15 @@ const initDp = (aid: string, cid: string, vList: any[], pic: string) => {
       }
     ]
   }
-
+  console.log("store.state.settings!.player.hls", store.state.settings!.player.hls)
+  var isHls = store.state.settings!.player.hls
+  console.log("isHls", isHls)
   const liveOptions: DPlayerOptions = {
     container: document.getElementById('dplayer'),
     screenshot: false,
     hotkey: true,
     airplay: true,
-    // live: true,
+    live: isHls ? false : true,
     video: videoOption(vList, pic),
     preload: "metadata",
     autoplay: true,
@@ -192,7 +194,7 @@ const initDp = (aid: string, cid: string, vList: any[], pic: string) => {
         //   console.log(info);
         // });
         live.on('DANMU_MSG', async ({ info: [[, , , color], message, [uid, uname, isOwner /*, isVip, isSvip*/]] }) => {
-          const danmaku:DPlayerDanmakuItem = {
+          const danmaku: DPlayerDanmakuItem = {
             type: 'right',
             color: color.toString(16),
             text: message
@@ -244,7 +246,7 @@ const initDp = (aid: string, cid: string, vList: any[], pic: string) => {
 }
 const nextPlay = async () => {
   const playData = await useNativeBB(state.playList[state.playIndex].aid as string, store.state.login!.cookie, flv, store.state.settings!.defaultQn)
-  const playList = await useQnData(playData, store.state.settings!.player.hevc)
+  const playList = await useQnData(playData, store.state.settings!.player.hevc, store.state.settings!.player.hls)
 
   console.log(playList)
 
@@ -307,7 +309,7 @@ onMounted(
     })
 
     const playData = await useNativeBB(route.query.aid as string, store.state.login!.cookie, flv, store.state.settings!.defaultQn)
-    const playList = await useQnData(playData, store.state.settings!.player.hevc)
+    const playList = await useQnData(playData, store.state.settings!.player.hevc, store.state.settings!.player.hls)
     console.log("playList", playList)
     console.log("playData", playData)
 

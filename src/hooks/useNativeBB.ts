@@ -66,8 +66,8 @@ export const useNativeBB = async (aid: string, cookie: string, flv: boolean = fa
         })
         liveRes.data.data.cid = rid
         liveRes.data.data.flvMode = true
-        liveRes.data.data.baseData = { pic: ""}
-        liveRes.data.data.dash = {"audio":[{"base_url":""}]}
+        liveRes.data.data.baseData = { pic: "" }
+        liveRes.data.data.dash = { "audio": [{ "base_url": "" }] }
         liveRes.data.data.cookie = cookie
         console.log("liveRes", liveRes.data.data)
         return liveRes.data.data
@@ -146,7 +146,7 @@ export const usePlayUrl = async (aid: string, cookie: string, flv: boolean = fal
         return { vUrl: videoUrl, aUrl: audioUrl, cid: playData.cid }
     }
 }
-export const getLiveUrl = async (cid: string, ac: string, cookie: string): Promise<any> => {
+export const getLiveUrl = async (cid: string, ac: string, cookie: string, hls: boolean): Promise<any> => {
     const liveUrl = "https://api.live.bilibili.com/room/v1/Room/playUrl"
     const liveRes: any = await fetch(liveUrl, {
         method: 'GET',
@@ -164,7 +164,7 @@ export const getLiveUrl = async (cid: string, ac: string, cookie: string): Promi
         },
         query: {
             cid: cid,
-            platform: "h5",
+            platform: hls ? "h5" : "web",
             quality: ac,
             qn: "",
         }
@@ -176,7 +176,8 @@ export const getLiveUrl = async (cid: string, ac: string, cookie: string): Promi
     return liveRes.data.data.durl.map(({ url, order }: any) => ({
         id: cqn,
         url: url,
-        type: "customHls",
+        type: hls ? "customHls" : "customFlv",
+        // type: "customFlv",
         name: cqd[0].desc + "：路线" + order
     }))
 }
@@ -187,14 +188,16 @@ export const getLiveUrl = async (cid: string, ac: string, cookie: string): Promi
  * @param playData
  * @param hevc
  */
-export const useQnData = async (playData: any, hevc: boolean = false) => {
+export const useQnData = async (playData: any, hevc: boolean = false, hls: boolean = false) => {
     console.log("HEVC", hevc)
+    console.log("HLS", hls);
+
 
     if (playData.hasOwnProperty("current_quality")) {
         //是直播
         var ret = new Array()
         for (var i = 0; i < playData.accept_quality.length; i++) {
-            ret.push(...await getLiveUrl(playData.cid, playData.quality_description[i].qn.toString(), playData.cookie))
+            ret.push(...await getLiveUrl(playData.cid, playData.quality_description[i].qn.toString(), playData.cookie, hls))
         }
         return ret
     }

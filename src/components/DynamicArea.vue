@@ -28,7 +28,7 @@ const downVideo = async (aid: string) => {
 
   try {
     playData = await useNativeBB(aid, store.state.login?.cookie as string, false)
-    playList = await useQnData(playData, store.state.settings!.player.hevc)
+    playList = await useQnData(playData, store.state.settings!.player.hevc, store.state.settings!.player.hls)
   } catch (e) {
     console.log(e)
   }
