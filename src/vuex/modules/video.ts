@@ -31,12 +31,19 @@ export const moduleVideo: Module<StateTypeVideo, StateTypeRoot> = {
             state.title = state.playList[payload].title
         },
         add2PlayList(state, payload: any) {
-            console.log("state",state,"payload",payload);
+            console.log("state",state);
             
-            if (state.playList.map(video => video.aid).includes(payload.aid)) return
-
-            state.playList.push(payload)
-            state.count++
+            // const exists =  state.playList.map(video => video.aid).includes(payload.aid)
+            let index = state.playList.findIndex(v => v.aid == payload.aid)
+            console.log("查找index", index)
+            if(index < 0) {
+                state.playList.push(payload)
+                state.count++
+                index = state.count - 1
+            }
+            // state.playList.push(payload)
+            state.playIndex = index
+            state.title = state.playList[index].title
         },
         setPlayList(state, payload: any[]) {
             state.playList = payload

@@ -332,6 +332,8 @@ onMounted(
     const unlisten = await listen('new-video', (event) => {
       const temp = JSON.parse(event.payload as string)
       store.commit("add2PlayList", temp)
+      //自动播放
+      nextPlay()
     })
     // 注册全局事件, 批量添加视频到播放列表
     await listen('new-videos', (event) => {

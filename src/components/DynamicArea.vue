@@ -75,9 +75,10 @@ const tipDownError = (mes: string) => {
         <el-image
             :src="item.cover+'@200w_113h'"
             class="image"
-            :preview-src-list="state.srcList"
+            
             :initial-index="index"
             fit="cover"
+            @click="openVideoWindow([{aid: `${item.param}`, title: item.title}], store.state.scale)"
         />
         <div style="padding: 14px">
           <el-link

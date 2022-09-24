@@ -55,9 +55,10 @@
             <el-image
                 :src="item.cover_from_user+'@200w_113h'"
                 class="image"
-                :preview-src-list="state.srcList"
+                
                 :initial-index="index"
                 fit="cover"
+                @click="openVideoWindow([{aid: `live${item.room_id}`, title: `【直播】${item.title}`}], store.state.scale)"
             />
             <div style="padding: 14px">
               <el-link
