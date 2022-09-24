@@ -210,7 +210,7 @@ export const moduleLive: Module<StateTypeLive, StateTypeRoot> = {
             const all = state.oriList.map(ele => ({aid: 'live'+ele.room_id, title: '【直播】'+ele.title}))
             console.log("all", all);
             
-            await useReVideoWindow(all, rootState.scale)
+            await useReVideoWindow(all, rootState.scale, false)
         }
     }
 }

@@ -78,13 +78,13 @@ const tipDownError = (mes: string) => {
             
             :initial-index="index"
             fit="cover"
-            @click="openVideoWindow([{aid: `${item.param}`, title: item.title}], store.state.scale)"
+            @click="openVideoWindow([{aid: `${item.param}`, title: item.title}], store.state.scale, true)"
         />
         <div style="padding: 14px">
           <el-link
               target="_blank"
               :underline="false"
-              @click="openVideoWindow([{aid: `${item.param}`, title: item.title}], store.state.scale)">
+              @click="openVideoWindow([{aid: `${item.param}`, title: item.title}], store.state.scale, false)">
             <span class="title">{{ item.title }}</span>
           </el-link>
 

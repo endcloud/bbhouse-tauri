@@ -11,7 +11,7 @@ export const useReBilibiliWindow = (uwp: boolean = false, aid: string) => {
     }
 }
 
-export const useReVideoWindow = async (videos: { aid: string, title: string }[], scale: number = 1) => {
+export const useReVideoWindow = async (videos: { aid: string, title: string }[], scale: number = 1, autoplay: boolean) => {
     const aid = videos[0].aid
     const title = videos[0].title
     const status = await useVideoWindowState()
@@ -31,7 +31,8 @@ export const useReVideoWindow = async (videos: { aid: string, title: string }[],
 
         await emit("new-video", {
             title,
-            aid
+            aid,
+            autoplay
         }).then(async () => {
             // await (await useVideoWindow() as WebviewWindow).setFocus()
             ElMessage({

@@ -248,7 +248,7 @@ export const moduleDynamic: Module<StateTypeDynamic, StateTypeRoot> = {
             if (!isConfirm) return
 
             const all = state.oriList.filter(ele => state.tagIndex[state.tagList[state.tabIndex]].includes(ele.tid)).map(ele => ({aid: ele.param, title: ele.title}))
-            await useReVideoWindow(all, rootState.scale)
+            await useReVideoWindow(all, rootState.scale, false)
         }
     }
 }

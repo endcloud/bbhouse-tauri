@@ -58,13 +58,13 @@
                 
                 :initial-index="index"
                 fit="cover"
-                @click="openVideoWindow([{aid: `live${item.room_id}`, title: `【直播】${item.title}`}], store.state.scale)"
+                @click="openVideoWindow([{aid: `live${item.room_id}`, title: `【直播】${item.title}`}], store.state.scale, true)"
             />
             <div style="padding: 14px">
               <el-link
                   target="_blank"
                   :underline="false"
-                  @click="openVideoWindow([{aid: `live${item.room_id}`, title: `【直播】${item.title}`}], store.state.scale)">
+                  @click="openVideoWindow([{aid: `live${item.room_id}`, title: `【直播】${item.title}`}], store.state.scale, false)">
                 <span class="title">{{ item.title }}</span>
               </el-link>
     
