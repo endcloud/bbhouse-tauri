@@ -35,7 +35,6 @@ export const moduleVideo: Module<StateTypeVideo, StateTypeRoot> = {
             
             // const exists =  state.playList.map(video => video.aid).includes(payload.aid)
             let index = state.playList.findIndex(v => v.aid == payload.aid)
-            console.log("查找index", index)
             if(index < 0) {
                 state.playList.push(payload)
                 state.count++
@@ -55,10 +54,10 @@ export const moduleVideo: Module<StateTypeVideo, StateTypeRoot> = {
         }
     },
     actions: {
-        async loadComment({state, rootState}, payload?: number) {
-            console.log("state.playList[state.playIndex].aid",state.playList[state.playIndex].aid);
-            
+        async loadComment({state, rootState}, payload?: number) {            
             if(isNaN(Number(state.playList[state.playIndex].aid))){
+                state.comments = []
+                state.commentPageData = {num:0, size:-1, count:0, acount:0}
                 return
             }
             state.commentPageIndex = payload ? payload : 1
@@ -85,6 +84,6 @@ export const moduleVideo: Module<StateTypeVideo, StateTypeRoot> = {
             console.log(resp.data.data)
             state.comments = resp.data.data.replies
             state.commentPageData = resp.data.data.page
-        }
+        },
     }
 }

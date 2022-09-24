@@ -139,6 +139,12 @@ const initDp = (aid: string, cid: string, vList: any[], pic: string) => {
       color: '#ffffff',
     },
     contextmenu: [
+    {
+        text: '刷新视频',
+        click: async () => {
+          await nextPlay()
+        }
+      },
       {
         text: '下载视频',
         click: async () => {
@@ -210,6 +216,14 @@ const initDp = (aid: string, cid: string, vList: any[], pic: string) => {
         options.success();
       },
     },
+    contextmenu: [
+      {
+        text: '刷新直播',
+        click: async () => {
+          await nextPlay()
+        }
+      },
+    ]
   }
 
   if (isNaN(Number(aid))) {
@@ -331,9 +345,12 @@ onMounted(
     // 注册全局事件, 添加新的视频到播放列表
     const unlisten = await listen('new-video', (event) => {
       const temp = JSON.parse(event.payload as string)
+      const preIndex = state.playIndex
       store.commit("add2PlayList", temp)
-      //自动播放
-      nextPlay()
+      if(preIndex != state.playIndex) {
+        //自动播放
+        nextPlay()
+      }
     })
     // 注册全局事件, 批量添加视频到播放列表
     await listen('new-videos', (event) => {
