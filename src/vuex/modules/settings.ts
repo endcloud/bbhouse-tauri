@@ -44,7 +44,7 @@ export const moduleSettings: Module<StateTypeSettings, StateTypeRoot> = {
         }
     },
     actions: {
-        async loadConfig({state}) {
+        async loadConfig({state, dispatch}) {
             let configLocal
             console.log(await homeDir())
 
@@ -71,6 +71,8 @@ export const moduleSettings: Module<StateTypeSettings, StateTypeRoot> = {
             if (state.downloadPicPath === "") {
                 state.downloadPicPath = (await homeDir())
             }
+
+            state.player.flv = true // 避免出现flv问题导致始终无法播放
 
             return true
 

@@ -1,11 +1,13 @@
 import {InjectionKey} from 'vue'
 import {createStore, Store, useStore as baseUseStore} from 'vuex'
 import {
-    moduleDynamic, moduleLive,
-    moduleHome, moduleLogin, moduleSettings, moduleVideo,
-    StateTypeLive,
+    moduleDynamic,
+    moduleHome, moduleLive,
+    moduleLogin,
+    moduleSettings,
+    moduleVideo,
     StateTypeDynamic,
-    StateTypeHome,
+    StateTypeHome, StateTypeLive,
     StateTypeLogin,
     StateTypeSettings,
     StateTypeVideo
@@ -16,20 +18,27 @@ import {useDark, useToggle} from "@vueuse/core"
 import {fetch} from "@tauri-apps/api/http"
 import config from '../../package.json'
 import {ElMessageBox} from "element-plus"
+import {moduleSpace, StateTypeSpace} from "./modules"
+import {moduleUppers, StateTypeUppers} from "./modules/uppers"
+import {localDataDir} from "@tauri-apps/api/path"
+import {BaseDirectory, createDir} from "@tauri-apps/api/fs"
 
 
 export interface StateTypeRoot {
     count: number,
-    index: "home" | "live" | "time_machine" | "settings" | "about" | "login" | "404",
+    index: "home" | "live" | "time_machine" | "settings" | "about" | "login" | "404" | "uppers" | "space",
     platform: string,
+    dataDir: string,
     scale: number,
     theme: number,
-    live?: StateTypeLive,
     dynamic?: StateTypeDynamic,
     home?: StateTypeHome,
     video?: StateTypeVideo,
     login?: StateTypeLogin,
     settings?: StateTypeSettings,
+    space?: StateTypeSpace,
+    uppers?: StateTypeUppers,
+    live?: StateTypeLive,
 }
 
 // 定义 injection key
@@ -42,6 +51,7 @@ export const store = createStore<StateTypeRoot>({
             count: 0,
             index: "home",
             platform: "",
+            dataDir: "",
             scale: 1,
             theme: 0, // 0: dark, light: 1
         }
@@ -75,6 +85,8 @@ export const store = createStore<StateTypeRoot>({
         },
         async setPlatform({state}) {
             state.platform = (await type()).toString().toLowerCase()
+            state.dataDir = `${await localDataDir()}BBHouse`
+            await createDir('BBHouse', { dir: BaseDirectory.LocalData, recursive: true }); // 创建本地数据目录
         },
         async checkUpdate({state}) {
             const res: any = await fetch("https://cos.endcloud.cn/bbhouse", {
@@ -98,7 +110,7 @@ export const store = createStore<StateTypeRoot>({
                     }
                 )
                     .then(() => {
-                        window.open(`https://github.com/endcloud/bbhouse-tauri`, "_blank")
+                        window.open(`https://github.com/endcloud/bbhouse-tauri/releases`, "_blank")
                     })
                     .catch(() => {
                         console.log('取消')
@@ -108,11 +120,13 @@ export const store = createStore<StateTypeRoot>({
     },
     modules: {
         dynamic: moduleDynamic,
-        live: moduleLive,
         home: moduleHome,
         video: moduleVideo,
         login: moduleLogin,
         settings: moduleSettings,
+        space: moduleSpace,
+        uppers: moduleUppers,
+        live: moduleLive,
     }
 })
 
@@ -120,5 +134,3 @@ export const store = createStore<StateTypeRoot>({
 export function useStore() {
     return baseUseStore(key)
 }
-
-

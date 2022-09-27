@@ -2,9 +2,9 @@
   "name": "bbhouse-app",
   "license": "GPL-3.0",
   "private": true,
-  "version": "1.0.6",
-  "code": "#22.106.01",
-  "time": 1660723502,
+  "version": "1.1.0",
+  "code": "#22.110.06",
+  "time": 1664292724,
   "type": "module",
   "scripts": {
     "tauri-dev": "yarn tauri dev",
@@ -16,13 +16,12 @@
   },
   "dependencies": {
     "@element-plus/icons-vue": "^2.0.6",
-    "@tauri-apps/api": "^1.0.2",
+    "@tauri-apps/api": "^1.1.0",
     "aplayer": "^1.10.1",
     "crypto-js": "^4.1.1",
     "dplayer": "^1.26.0",
     "element-plus": "^2.2.12",
     "flv.js": "^1.6.2",
-    "goldvideo-player": "^1.0.2",
     "hls.js": "^1.2.1",
     "qrcode.vue": "^3.3.3",
     "vue": "^3.2.37",
@@ -31,7 +30,7 @@
     "vuex": "^4.0.2"
   },
   "devDependencies": {
-    "@tauri-apps/cli": "^1.0.5",
+    "@tauri-apps/cli": "^1.1.1",
     "@types/crypto-js": "^4.1.1",
     "@types/dplayer": "^1.25.2",
     "@vitejs/plugin-vue": "^3.0.0",

@@ -3,7 +3,9 @@ import {ref} from "vue"
 import {useStore} from "../vuex"
 
 const name = "NavMenu"
+
 const isCollapse = ref(true)
+const tempSrc = "https://i2.hdslb.com/bfs/face/d399d6f5cf7943a996ae96999ba3e6ae2a2988de.jpg@240w_240h_1c_1s.webp"
 
 const handleOpen = (key: string, keyPath: string[]) => {
   console.log(key, keyPath)
@@ -13,6 +15,7 @@ const handleClose = (key: string, keyPath: string[]) => {
 }
 
 const store = useStore()
+const uppers = store.state.uppers!
 
 </script>
 
@@ -36,9 +39,13 @@ const store = useStore()
         <el-icon><video-camera-filled /></el-icon>
         <template #title>直播</template>
       </el-menu-item>
-      <el-menu-item index="time_machine">
+      <el-menu-item index="time_machine" v-if="false">
         <el-icon><Promotion /></el-icon>
         <template #title>时光机</template>
+      </el-menu-item>
+      <el-menu-item index="sp_up_manager">
+        <el-icon><WindPower /></el-icon>
+        <template #title>特别关注</template>
       </el-menu-item>
       <el-menu-item index="settings">
         <el-icon><Tools /></el-icon>
@@ -52,10 +59,20 @@ const store = useStore()
         <el-icon><QuestionFilled /></el-icon>
         <template #title>Test</template>
       </el-menu-item>
+      <el-divider />
+      <el-menu-item v-for="up in uppers.list" :index="`space?mid=${up.mid}&avatar=${encodeURIComponent(up.avatar)}`" >
+        <el-avatar :src="`https://${up.avatar}@240w_240h_1c_1s.webp`" class="avatar"/>
+        <template #title>{{ up.name }}</template>
+      </el-menu-item>
     </el-menu>
   </el-scrollbar>
 </template>
 
 <style scoped>
+
+.avatar {
+  margin-left: -8px !important;
+  margin-right: -10px !important;
+}
 
 </style>

@@ -9,7 +9,7 @@
   },
   "package": {
     "productName": "BBHouse",
-    "version": "1.0.6"
+    "version": "1.1.0"
   },
   "tauri": {
     "allowlist": {
@@ -39,8 +39,7 @@
           { "name": "node", "args": true,"cmd": "node"},
           { "name": "commit", "args": true, "cmd": "git"},
           { "name": "bb", "args": true,"cmd": "bbdown"},
-          { "name": "curl", "args": true,"cmd": "curl"},
-          { "name": "ls", "args": true,"cmd": "ls"}
+          { "name": "curl", "args": true,"cmd": "curl"}
         ]
       },
       "fs": {
@@ -53,6 +52,9 @@
         ]
       },
       "os": {
+        "all": true
+      },
+      "clipboard": {
         "all": true
       }
     },

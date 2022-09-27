@@ -109,7 +109,7 @@ export const moduleLive: Module<StateTypeLive, StateTypeRoot> = {
         srcListBak: [],
         tabIndex: 0,
         isSearch: false,
-        pageTitle: "直播",
+        pageTitle: "直播（BETA）",
         process: 0
     }),
     mutations: {

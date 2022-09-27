@@ -1,4 +1,16 @@
-## v1,0.6
+## v1.1.0
+- `add` live-module.
+- `add` space-page and navBar-super-uppers-feature.
+- `add` playList-save when video-window was closed.
+- `add` "force-dash" test button for macOS and Linux.
+- `add` more right-menu-operation for video-window.
+> include `点赞收藏` `一键三连` `复制时间锚点`
+- `opt` dynamic-card ext-menu show style.
+- `opt` dynamic-area scrollbar.
+- `fix` some bugs in dynamic-filter-mode.
+- `&nbsp;rm` time-machine-page temporarily.
+
+## v1.0.6
 - `fix` UI bug in Home's FilterMode 
 - `fix` bug in refreshing dynamic
 

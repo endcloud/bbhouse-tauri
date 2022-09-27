@@ -1,30 +1,32 @@
 <script setup lang="ts">
 import flvjs from "flv.js"
-import hlsjs from "hls.js"
+import Hls from "hls.js"
 // @ts-ignore
 import DPlayer, {DPlayerDanmaku, DPlayerEvents, DPlayerOptions, DPlayerVideo} from 'dplayer'
-import {onMounted, ref} from "vue"
+import {onBeforeUnmount, onMounted, ref} from "vue"
 import {useRoute} from "vue-router"
 import {useStore} from "../vuex"
 import {useAPlayer, useAuData, useDownload, useDPlayerReg, useNativeBB, useQnData, useTs2Time} from "../hooks"
 import {appWindow, PhysicalSize} from "@tauri-apps/api/window"
 import {listen} from "@tauri-apps/api/event"
-import Hls from "hls.js"
+import {confirm} from "@tauri-apps/api/dialog"
+import {open} from "@tauri-apps/api/shell"
 
 const route = useRoute()
 const store = useStore()
 const state = store.state.video!
-const activeName = ref("0")
+const activeExtTabIndex = ref("0")
 
 let dp: DPlayer
 let ap: any
-let flvPlayer: flvjs.Player // 以上均应为唯一实例, 需要手动销毁重建
+let flvPlayer: flvjs.Player
+let hlsPlayer: Hls // 以上均应为唯一实例, 需要手动销毁重建
 let lastDecodedFrame = 0 // 已经解码(播放)的帧数
-let bufferGetTimes = 0 // seek时请求到缓存buffer的次数, >0即表示已经可以播放
+let bufferGetTimes = 0 // seek时请求到缓存buffer的次数, >0 即表示已经可以播放
 let timesThreshold = 3 // 手动跳帧的阈值， 高画质视频会在videoOption()中提升到4
 
 // const flv = false // 测试用
-const flv = !store.state.platform.includes("windows")
+let flv = (!store.state.platform.includes("windows")) && store.state.settings!.player.flv
 
 const flvHandle = (video: HTMLVideoElement, player: DPlayer) => {
   flvPlayer = flvjs.createPlayer({
@@ -73,15 +75,14 @@ const flvHandle = (video: HTMLVideoElement, player: DPlayer) => {
   })
 }
 const hlsHandle = (video: HTMLVideoElement, player: DPlayer) => {
-  const hls = new Hls()
-  hls.loadSource(video.src);
-  hls.attachMedia(video);
+  hlsPlayer = new Hls()
+  hlsPlayer.loadSource(video.src)
+  hlsPlayer.attachMedia(video)
 }
 
-const videoOption = (vList: any[], pic: string): DPlayerVideo => { 
-  const qn = vList.map((v, index) => v.id === store.state.settings!.defaultQn ? index : -1).find(i => i !== -1) ??
-      vList.map((v, index) => v.id < store.state.settings!.defaultQn ? index : -1).find(i => i !== -1) ?? 0
-
+const videoOption = (vList: any[], pic: string): DPlayerVideo => {
+  const qn = vList.map((v, index) => v.id === store.state.settings!.defaultQn ? index : -1).find(i => i > -1) ??
+      vList.map((v, index) => v.id < store.state.settings!.defaultQn ? index : -1).find(i => i > -1) ?? 0
   timesThreshold = vList[qn].id >= 120 ? 4 : 3
   return {
     // url: 'http://qiniu-video.cdn.bcebos.com/test.mp4',
@@ -111,14 +112,14 @@ const danmakuOption = (aid: string, cid: string): DPlayerDanmaku => {
 }
 
 const initDp = (aid: string, cid: string, vList: any[], pic: string) => {
+  console.log("vList", vList)
 
-  console.log("vList",vList);
-  
   const options: DPlayerOptions = {
     container: document.getElementById('dplayer'),
     screenshot: false,
     hotkey: true,
     airplay: true,
+    live: isNaN(Number(aid)),
     video: videoOption(vList, pic),
     danmaku: danmakuOption(aid, cid),
     preload: "metadata",
@@ -132,10 +133,36 @@ const initDp = (aid: string, cid: string, vList: any[], pic: string) => {
     },
     contextmenu: [
       {
+        text: '复制时间锚点链接',
+        click: async () => {
+          await store.dispatch("copyTimeUrl", dp.video.currentTime)
+        }
+      },
+      {
+        text: '前往网页',
+        click: async () => {
+          await open(`https://www.bilibili.com/video/av${aid}?t=${dp.video.currentTime}`)
+        }
+      },
+      {
+        text: '点赞收藏',
+        click: async () => {
+          await store.dispatch("like", aid)
+          await store.dispatch("star", aid)
+        }
+      },
+      {
+        text: '一键三连',
+        click: async () => {
+          await store.dispatch("triple", aid)
+        }
+      },
+      {
         text: '下载视频',
         click: async () => {
           console.log(`开始下载 av${aid} 的音视频流`)
-          await useDownload(aid, vList[0].url, store.state.settings!.downloadVideoPath, "video", store.state.settings!.downloadImplIndex)
+          const source = store.state.settings!.downloadImplIndex === 2 ? pic : vList[0].url // 调试用的脚本下载选项
+          await useDownload(aid, source, store.state.settings!.downloadVideoPath, "video", store.state.settings!.downloadImplIndex)
           await useDownload(aid, ap.list.audios[0].url, store.state.settings!.downloadVideoPath, "audio", store.state.settings!.downloadImplIndex)
           await useDownload(aid, pic, store.state.settings!.downloadPicPath, "pic", store.state.settings!.downloadImplIndex)
         }
@@ -145,7 +172,7 @@ const initDp = (aid: string, cid: string, vList: any[], pic: string) => {
         click: async () => {
           await store.dispatch("loadComment")
         }
-      }
+      },
     ]
   }
   dp = new DPlayer(options)
@@ -163,6 +190,10 @@ const initDp = (aid: string, cid: string, vList: any[], pic: string) => {
   })
   dp.on(<DPlayerEvents>'loadeddata', async () => {
     console.log('loadeddata')
+    if (isNaN(Number(aid))) { // 直播, 禁止倍速, 暂时关闭弹幕
+      dp.danmaku.hide()
+      return
+    }
     dp.video.playbackRate = store.state.settings!.player.playRate
     if (!store.state.settings!.player.isDanmaku) dp.danmaku.hide()
   })
@@ -200,7 +231,16 @@ const nextPlay = async () => {
     if (flvPlayer) {
       flvPlayer.unload()
       flvPlayer.detachMediaElement()
-      flvPlayer.destroy()
+      try {
+        flvPlayer.destroy()
+      } catch (e) {
+        console.log(e)
+      }
+    }
+    if (hlsPlayer) {
+      hlsPlayer.stopLoad()
+      hlsPlayer.detachMedia()
+      hlsPlayer.destroy()
     }
     dp.destroy()
     initDp(state.playList[state.playIndex].aid, playData.cid, playList!, playData.baseData.pic)
@@ -224,30 +264,27 @@ const nextPlay = async () => {
 onMounted(
     async () => {
       console.log(route.query,)
+      if (Number(route.query.dash) === 1) {
+        flv = false
+      }
+
       store.commit("add2PlayList", {
         title: route.query.t,
         aid: route.query.aid
       })
+      store.commit("setPlayIndex", 0)
 
       const playData = await useNativeBB(route.query.aid as string, store.state.login!.cookie, flv, store.state.settings!.defaultQn)
       const playList = await useQnData(playData, store.state.settings!.player.hevc)
       console.log("playList", playList)
-      console.log("playData", playData)
+
       initDp(route.query.aid as string, playData.cid, playList!, playData.baseData.pic)
-
-
       ap = flv ? undefined : useAPlayer(dp, useAuData(playData), route.query.t as string)
-      useDPlayerReg(dp, ap)
-        // 加载评论
-      
-
-
-      // ap = flv ? undefined : useAPlayer(dp, useAuData(playData), route.query.t as string)
-      // useDPlayerReg(dp, ap)
+      useDPlayerReg(dp, ap) // 注册音视频播放同步事件
 
       // 注册全局事件, 添加新的视频到播放列表
       const unlisten = await listen('new-video', (event) => {
-        const temp = JSON.parse(event.payload as string)   
+        const temp = JSON.parse(event.payload as string)
         store.commit("add2PlayList", temp)
       })
       // 注册全局事件, 批量添加视频到播放列表
@@ -264,6 +301,34 @@ onMounted(
           nextPlay()
         }
       })
+      // 注册窗口关闭事件
+      await appWindow.onCloseRequested(async (event) => {
+        const confirmed = await confirm('确认关闭?')
+        if (!confirmed) {
+          event.preventDefault()
+        } else {
+          await store.dispatch("saveVideoList")
+          unlisten()
+          if (flvPlayer) {
+            flvPlayer.unload()
+            flvPlayer.detachMediaElement()
+            try {
+              flvPlayer.destroy()
+            } catch (e) {
+              console.log(e)
+            }
+          }
+          if (hlsPlayer) {
+            hlsPlayer.stopLoad()
+            hlsPlayer.detachMedia()
+            hlsPlayer.destroy()
+          }
+          if (dp){
+            dp.destroy()
+          }
+        }
+      })
+      // 加载评论
       await store.dispatch("loadComment")
     }
 )
@@ -287,7 +352,7 @@ const setCommentPage = async (e: number) => {
   <div class="mainArea">
     <div id="dplayer" class="d-player"/>
     <div id="aplayer" class="a-player" v-show="false"/>
-    <el-tabs v-model="activeName" tab-position="top" class="extArea" type="border-card">
+    <el-tabs v-model="activeExtTabIndex" tab-position="top" class="extArea" type="border-card">
       <el-tab-pane label="播放列表" name="0">
         <el-scrollbar height="90vh">
           <div class="playList">
@@ -305,7 +370,7 @@ const setCommentPage = async (e: number) => {
           </div>
         </el-scrollbar>
       </el-tab-pane>
-      <el-tab-pane label="评论区" name="1">
+      <el-tab-pane label="评论区" name="1" v-if="!isNaN(Number(state.aid))">
         <el-pagination layout="prev, pager, next" style="width: 100%; justify-content: center;"
                        :total="state.commentPageData.count" :page-size="state.commentPageData.size"
                        :current-page="state.commentPageIndex" @current-change="setCommentPage"

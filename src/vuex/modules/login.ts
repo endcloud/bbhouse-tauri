@@ -19,6 +19,7 @@ export interface StateTypeLogin {
     cookie: string,
     token: string,
     expireDate: string,
+    mid: number,
 }
 
 export const moduleLogin: Module<StateTypeLogin, StateTypeRoot> = {
@@ -35,6 +36,7 @@ export const moduleLogin: Module<StateTypeLogin, StateTypeRoot> = {
         cookie: "",
         token: "",
         expireDate: "1970-01-01 08:00:00",
+        mid: 0,
     }),
     mutations: {},
     actions: {

@@ -31,6 +31,11 @@ const openRepo = reactive<TypeOpenRepo[]>([
     desc: "基于原生 js 实现的 flv 视频解码器与播放器, 此处作为 dplayer 的 flv 解码器使用"
   },
   {
+    name: "hls.js",
+    url: "https://github.com/video-dev/hls.js/",
+    desc: "基于原生 js 实现的用以支持 HLS(HTTP Live Streaming) 播放的浏览器MSE扩展."
+  },
+  {
     name: "qrcode.vue",
     url: "https://qr-vue.tie.pub/",
     desc: "基于 Vue 3 的二维码生成组件"

@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { nextTick, onMounted, onUnmounted, ref } from "vue"
+import {nextTick, onMounted, ref} from "vue"
 import LiveArea from "./LiveArea.vue"
-import { useStore } from "../vuex"
-import { ElLoading, TabPanelName, TabsPaneContext } from "element-plus/es"
-import { useRouter } from "vue-router"
+import {useStore} from "../vuex"
+import {ElLoading} from "element-plus/es"
+import {useRouter} from "vue-router"
 
 interface TypeProps {
   readLocal: boolean
@@ -21,7 +21,7 @@ const refUp = ref('')
 
 onMounted(async () => {
   if (!store.state.login?.local || store.state.login?.expire) {
-    await router.replace({ name: 'login' })
+    await router.replace({name: 'login'})
   }
 
   store.commit('setIndex', "live")
@@ -47,47 +47,47 @@ const onSearch = (e: any) => {
   if (refTitle.value === "" && refUp.value === "") {
     store.commit("resetLiveFilter")
   } else {
-    store.commit("doLiveFilter", { title: refTitle.value, up: refUp.value })
+    store.commit("doLiveFilter", {title: refTitle.value, up: refUp.value})
   }
 }
 const refresh = () => {
-  store.dispatch('refreshLive', "陈瑞亲妈")
+  store.dispatch('refreshLive', "cherry柠檬熟了")
 }
 </script>
-    
+
 <template>
   <el-row :gutter="10" justify="start" align="middle">
     <el-col :span="16">
       <h2>
-        {{  state.pageTitle  }}
-        <el-button text circle icon="refresh" type="info" @click="refresh" v-if="!state.isSearch" />
+        {{ state.pageTitle }}
+        <el-button text circle icon="refresh" type="info" @click="refresh" v-if="!state.isSearch"/>
       </h2>
     </el-col>
 
     <el-col :span="4">
       <el-input v-model="refTitle" placeholder="过滤标题" @change="onSearch" @clear="onSearch" id="search-title"
-        clearable />
+                clearable/>
     </el-col>
     <el-col :span="4">
-      <el-input v-model="refUp" placeholder="过滤UP主" @change="onSearch" @clear="onSearch" id="search-up" clearable />
+      <el-input v-model="refUp" placeholder="过滤UP主" @change="onSearch" @clear="onSearch" id="search-up" clearable/>
     </el-col>
   </el-row>
 
   <el-row style="margin-top: 10vh; overflow: hidden; background: rgba(0, 0, 0, 0%)" justify="center"
-    v-if="state.loading">
-    <el-image src="https://s1.hdslb.com/bfs/static/mall-c/static/img/refresh.00100b5.gif" style="width: 500px" />
+          v-if="state.loading">
+    <el-image src="https://s1.hdslb.com/bfs/static/mall-c/static/img/refresh.00100b5.gif" style="width: 500px"/>
   </el-row>
 
   <el-scrollbar class="live-scroll">
-    <LiveArea :live-list="state.showList" />
-    <el-backtop :right="100" :bottom="100" />
+    <LiveArea :live-list="state.showList"/>
+    <el-backtop :right="100" :bottom="100"/>
     <div style="height: 8vh"></div>
   </el-scrollbar>
 
 </template>
-    
+
 <style lang="less">
-.live-scroll>div {
+.live-scroll > div {
   overflow-x: hidden;
 }
 

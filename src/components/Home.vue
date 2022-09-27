@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import {nextTick, onMounted, onUnmounted, ref} from "vue"
 import DynamicArea from "./DynamicArea.vue"
-import {useStore} from "../vuex"
+import {StateTypeDynamic, useStore} from "../vuex"
 import {ElLoading, TabPanelName, TabsPaneContext} from "element-plus/es"
 import {useRouter} from "vue-router"
+import {tidRelation} from "../hooks"
 
 interface TypeProps {
   readLocal: boolean
@@ -12,7 +13,7 @@ interface TypeProps {
 const p = defineProps<TypeProps>()
 
 const store = useStore()
-const state = store.state.dynamic!
+const state = store.state.dynamic! as StateTypeDynamic
 const router = useRouter()
 
 const tabPosition = ref('top')
@@ -27,7 +28,11 @@ onMounted(async () => {
   store.commit('setIndex', "home")
   if (state.loading) {
     console.log('loading', p.readLocal)
+    if (p.readLocal){
+      await store.dispatch("saveLocal")
+    }
     await store.dispatch('getData')
+    await store.dispatch("readUppers")
   }
 })
 
@@ -80,7 +85,7 @@ const iGetAll = () => {
       </h2>
     </el-col>
     <el-col :span="4" style="text-align: right; padding-right: 10px">
-      <el-dropdown v-if="!state.isSearch">
+      <el-dropdown  v-if="!state.isSearch">
         <span style="font-size: 16px; cursor: pointer; user-select: none">
           🥰
         </span>
@@ -113,14 +118,15 @@ const iGetAll = () => {
            v-model="state.tabIndex" v-if="!state.isSearch && !state.loading">
     <el-tab-pane v-for="(tag, index) in state.tagList" :label="tag" :name="index" class="dynamic-list">
       <el-scrollbar class="dynamic-scroll" v-if="index === state.tabIndex">
-        <DynamicArea :dynamic-list="state.oriList.filter(ele => state.tagIndex[tag].includes(ele.tid))"/>
+        <DynamicArea :dynamic-list="state.oriList.filter(ele => tidRelation.tagIndex[tag].includes(ele.tid))"
+        :state="state"/>
         <div style="height: 8vh"></div>
       </el-scrollbar>
     </el-tab-pane>
   </el-tabs>
 
   <el-scrollbar class="dynamic-scroll" v-if="state.isSearch">
-    <DynamicArea :dynamic-list="state.showList"/>
+    <DynamicArea :dynamic-list="state.showList" :state="state"/>
     <el-backtop :right="100" :bottom="100"/>
     <div style="height: 8vh"></div>
 

@@ -14,11 +14,12 @@ interface NameValue {
 
 const store = useStore()
 const config = store.state.settings!
+const isWin = store.state.platform.includes("windows")
 const router = useRouter()
 
 // do not use same name with ref el-form
 const listAppearance: NameValue[] = [{name: "跟随系统", value: 0}, {name: "浅色", value: 1}, {name: "深色", value: 2}]
-const listDownloadImpl: NameValue[] = [{name: "系统cURL", value: 0}, {name: "BBDown", value: 1}]
+const listDownloadImpl: NameValue[] = [{name: "系统cURL", value: 0}, {name: "BBDown + Aria2", value: 1}] // 测试用, {name: "BBD.bat", value: 2}
 const listQn: NameValue[] = [
   {value: 127, name: "8K 超高清"},
   {value: 126, name: "杜比视界"},
@@ -89,7 +90,7 @@ const detail = h("div", {}, [
     href: "https://github.com/nilaoda/BBDown",
     target: "_blank",
     style: {color: "palevioletred", "text-decoration": "none"}
-  }, " BBDown "), "进行下载"]),
+  }, " BBDown + Aria2(必选) "), "进行下载"]),
 
 ])
 
@@ -156,6 +157,10 @@ const changeRate = () => {
         <el-switch v-model="config.player.hevc"/>
       </el-form-item>
 
+      <el-form-item label="FLV兼容模式" v-if="false">
+        <el-switch v-model="config.player.flv"/>
+      </el-form-item>
+
       <el-form-item label="默认弹幕状态">
         <el-switch v-model="config.player.isDanmaku"/>
       </el-form-item>
@@ -187,9 +192,12 @@ const changeRate = () => {
 
       <el-form-item label="下载功能实现">
         <el-radio-group v-model="config.downloadImplIndex" @change="checkBBDown">
-          <el-radio v-for="impl in listDownloadImpl" :label="impl.value">{{ impl.name }}</el-radio>
+          <el-radio v-for="(impl, index) in listDownloadImpl" :label="impl.value">
+            {{ impl.name }}
+            <el-link :underline="false" @click="downHelp" v-if="index === 1">&nbsp;(...?)</el-link>
+          </el-radio>
         </el-radio-group>
-        <el-link :underline="false" @click="downHelp">&nbsp;(...?)</el-link>
+
       </el-form-item>
 
       <el-form-item label="登录状态">
