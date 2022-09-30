@@ -116,7 +116,7 @@ const danmakuOption = (aid: string, cid: string): DPlayerDanmaku => {
 
 const initDp = (aid: string, cid: string, vList: any[], pic: string) => {
   //判断直播
-  if (isNaN(Number(route.query.aid))) {
+  if (isNaN(Number(aid))) {
     isLive = true
   }
   console.log("vList", vList);
@@ -327,8 +327,8 @@ const nextPlay = async () => {
     dp.destroy()
     if (isLive) {
       live.close(),
-        console.log("与弹幕服务器断开连接"),
-        isLive = false
+      console.log("与弹幕服务器断开连接"),
+      isLive = false
     }
     initDp(state.playList[state.playIndex].aid, playData.cid, playList!, playData.baseData.pic)
 
@@ -348,12 +348,6 @@ const nextPlay = async () => {
   console.log("ok", state.title)
 }
 
-onBeforeUnmount(() => {
-  if (isLive) {
-    live.close
-    isLive = false
-  }
-})
 
 onMounted(
     async () => {
@@ -371,7 +365,7 @@ onMounted(
       const playData = await useNativeBB(route.query.aid as string, store.state.login!.cookie, flv, store.state.settings!.defaultQn)
       const playList = await useQnData(playData, store.state.settings!.player.hevc, store.state.settings!.player.hls)
       console.log("playList", playList)
-
+      console.log("playData", playData)
       initDp(route.query.aid as string, playData.cid, playList!, playData.baseData.pic)
       ap = flv ? undefined : useAPlayer(dp, useAuData(playData), route.query.t as string)
       useDPlayerReg(dp, ap) // 注册音视频播放同步事件
@@ -419,6 +413,9 @@ onMounted(
           }
           if (dp){
             dp.destroy()
+          }
+          if (isLive) {
+            live.close()
           }
         }
       })

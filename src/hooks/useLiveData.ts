@@ -76,13 +76,9 @@ const getLiveUrlV2 = async (cid: string, ac: string, cookie: string, hls: boolea
         .format.find((f: any) => f.format_name === "flv")
         .codec.find((c: any) => c.codec_name.includes("avc"))
 
-    console.log("flvData",flvData);
-    console.log("hlsData",hlsData);
     const cqn = hls ? hlsData.current_qn : flvData.current_qn
 
     const dUrl = (data: any): string => `${(data.url_info.find((c: any) => !c.host.includes("mcdn")) ?? data.url_info[0]).host}${data.base_url}${data.url_info[0].extra}`
-    console.log("dUrl(flvData)",dUrl(flvData));
-    console.log("dUrl(hlsData)",dUrl(hlsData));
 
     return [{
         id: cqn,
