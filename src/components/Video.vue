@@ -459,7 +459,7 @@ const setCommentPage = async (e: number) => {
           </div>
         </el-scrollbar>
       </el-tab-pane>
-      <el-tab-pane label="评论区" name="1" v-if="!isLive">
+      <el-tab-pane label="评论区" name="1">
         <el-pagination layout="prev, pager, next" style="width: 100%; justify-content: center;"
                        :total="state.commentPageData.count" :page-size="state.commentPageData.size"
                        :current-page="state.commentPageIndex" @current-change="setCommentPage"

@@ -60,6 +60,8 @@ export const moduleVideo: Module<StateTypeVideo, StateTypeRoot> = {
         // todo-转移到模块comment中
         async loadComment({state, rootState}, payload?: number) {
             if (isNaN(Number(state.playList[state.playIndex].aid))){ // 直播, 不加载评论
+                state.comments = []
+                state.commentPageData = {num:0, size:-1, count:0, acount:0}
                 return
             }
 
