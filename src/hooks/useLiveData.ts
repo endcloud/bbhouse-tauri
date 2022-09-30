@@ -1,4 +1,4 @@
-import {fetch} from "@tauri-apps/api/http"
+import { fetch } from "@tauri-apps/api/http"
 
 
 const getLiveUrl = async (cid: string, ac: string, cookie: string): Promise<any> => {
@@ -27,7 +27,7 @@ const getLiveUrl = async (cid: string, ac: string, cookie: string): Promise<any>
 
     const cqn = liveRes.data.data.current_qn
     const cqd = liveRes.data.data.quality_description.filter((qd: any) => qd.qn === cqn)
-    return liveRes.data.data.durl.map(({url, order}: any) => ({
+    return liveRes.data.data.durl.map(({ url, order }: any) => ({
         id: cqn,
         url: url,
         type: "customHls",
@@ -35,7 +35,7 @@ const getLiveUrl = async (cid: string, ac: string, cookie: string): Promise<any>
     }))
 }
 
-const getLiveUrlV2 = async (cid: string, ac: string, cookie: string): Promise<any> => {
+const getLiveUrlV2 = async (cid: string, ac: string, cookie: string, hls: boolean): Promise<any> => {
     const liveUrl = "https://api.live.bilibili.com/xlive/web-room/v2/index/getRoomPlayInfo"
     const liveRes: any = await fetch(liveUrl, {
         method: 'GET',
@@ -75,15 +75,20 @@ const getLiveUrlV2 = async (cid: string, ac: string, cookie: string): Promise<an
         .stream.find((s: any) => s.protocol_name === "http_stream")
         .format.find((f: any) => f.format_name === "flv")
         .codec.find((c: any) => c.codec_name.includes("avc"))
-    const cqn = hlsData.current_qn
 
-    const dUrl = (data: any): string => `${(data.url_info.find((c: any) => !c.host.includes("mcdn"))??data.url_info[0]).host}${data.base_url}${data.url_info[0].extra}`
+    console.log("flvData",flvData);
+    console.log("hlsData",hlsData);
+    const cqn = hls ? hlsData.current_qn : flvData.current_qn
+
+    const dUrl = (data: any): string => `${(data.url_info.find((c: any) => !c.host.includes("mcdn")) ?? data.url_info[0]).host}${data.base_url}${data.url_info[0].extra}`
+    console.log("dUrl(flvData)",dUrl(flvData));
+    console.log("dUrl(hlsData)",dUrl(hlsData));
 
     return [{
         id: cqn,
         // url: `${hlsData.url_info.find((c: any) => !c.host.includes("mcdn"))??hlsData.url_info[0].host}${hlsData.base_url}${hlsData.url_info[0].extra}`,
-        url: dUrl(hlsData),
-        type: "customHls",
+        url: hls ? dUrl(hlsData) : dUrl(flvData),
+        type: hls ? "customHls": "customFlv",
         name: qnDescArray.find((d: any) => d.qn === cqn).desc
     }]
 }
@@ -114,14 +119,14 @@ export const useLiveMeta = async (aid: string, cookie: string) => {
     })
     liveRes.data.data.cid = rid
     liveRes.data.data.flvMode = true
-    liveRes.data.data.baseData = {pic: ""}
-    liveRes.data.data.dash = {"audio": [{"base_url": ""}]}
+    liveRes.data.data.baseData = { pic: "" }
+    liveRes.data.data.dash = { "audio": [{ "base_url": "" }] }
     liveRes.data.data.cookie = cookie
     console.log("liveMeta", liveRes.data.data)
     return liveRes.data.data
 }
 
-export const useLiveRes = async (playData: any) => {
+export const useLiveRes = async (playData: any, hls: boolean) => {
     const ret = []
     // ret.push(...playData.durl.map(({url, order}: any) => ({
     //     id: 80,
@@ -133,7 +138,7 @@ export const useLiveRes = async (playData: any) => {
     //     ret.push(...await getLiveUrl(playData.cid, ac, playData.cookie))
     // })
     for (let i = 0; i < playData.accept_quality.length; i++) {
-        ret.push(...await getLiveUrlV2(playData.cid, playData.quality_description[i].qn.toString(), playData.cookie))
+        ret.push(...await getLiveUrlV2(playData.cid, playData.quality_description[i].qn.toString(), playData.cookie, hls))
     }
     // ret.push(...await getLiveUrl(playData.cid, "4", playData.cookie))
     // ret.push(...await getLiveUrl(playData.cid, "3", playData.cookie))
@@ -143,5 +148,5 @@ export const useLiveRes = async (playData: any) => {
     //     type: "customFlv",
     //     name: "路线"+order
     // })))
-    return ret.filter((r: any) => !r.url.includes("mcdn"))
+    return hls ? ret.filter((r: any) => !r.url.includes("mcdn")) : ret
 }

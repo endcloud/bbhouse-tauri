@@ -156,11 +156,12 @@ const changeRate = () => {
       <el-form-item label="HEVC优先">
         <el-switch v-model="config.player.hevc"/>
       </el-form-item>
-
       <el-form-item label="FLV兼容模式" v-if="false">
         <el-switch v-model="config.player.flv"/>
       </el-form-item>
-
+      <el-form-item label="直播HLS优先">
+        <el-switch v-model="config.player.hls"/>
+      </el-form-item>
       <el-form-item label="默认弹幕状态">
         <el-switch v-model="config.player.isDanmaku"/>
       </el-form-item>
