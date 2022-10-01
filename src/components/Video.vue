@@ -142,7 +142,9 @@ const initDp = (aid: string, cid: string, vList: any[], pic: string) => {
     {
         text: '刷新视频',
         click: async () => {
+          const t = dp.video.currentTime - 1
           await nextPlay()
+          dp.seek(t)
         }
       },
       {
@@ -221,15 +223,6 @@ const initDp = (aid: string, cid: string, vList: any[], pic: string) => {
         // live.on('DANMU_MSG', ({ info }) => {
         //   console.log(info);
         // });
-        live.on('DANMU_MSG', async ({ info: [[, , , color], message, [uid, uname, isOwner /*, isVip, isSvip*/]] }) => {
-          const danmaku: DPlayerDanmakuItem = {
-            type: 'right',
-            color: color.toString(16),
-            text: message
-          };
-          console.log(danmaku);
-          dp.danmaku.draw(danmaku);
-        });
         options.success()
       },
       send: function (options) {
@@ -286,7 +279,15 @@ const initDp = (aid: string, cid: string, vList: any[], pic: string) => {
       lastDecodedFrame = 0
     }
   })
-
+  live.on('DANMU_MSG', async ({ info: [[, , , color], message, [uid, uname, isOwner /*, isVip, isSvip*/]] }) => {
+          const danmaku: DPlayerDanmakuItem = {
+            type: 'right',
+            color: color.toString(16),
+            text: message
+          };
+          // console.log(danmaku);
+          dp.danmaku.draw(danmaku);
+  })
 }
 const nextPlay = async () => {
   const playData = await useNativeBB(state.playList[state.playIndex].aid as string, store.state.login!.cookie, flv, store.state.settings!.defaultQn)
