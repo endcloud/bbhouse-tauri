@@ -223,6 +223,15 @@ const initDp = (aid: string, cid: string, vList: any[], pic: string) => {
         // live.on('DANMU_MSG', ({ info }) => {
         //   console.log(info);
         // });
+        live.on('DANMU_MSG', async ({ info: [[, , , color], message, [uid, uname, isOwner /*, isVip, isSvip*/]] }) => {
+        const danmaku: DPlayerDanmakuItem = {
+          type: 'right',
+          color: color.toString(16),
+          text: message
+        };
+        // console.log(danmaku);
+          dp.danmaku.draw(danmaku);
+        })
         options.success({})
       },
       send: function (options) {
@@ -278,15 +287,6 @@ const initDp = (aid: string, cid: string, vList: any[], pic: string) => {
       bufferGetTimes = 0
       lastDecodedFrame = 0
     }
-  })
-  live.on('DANMU_MSG', async ({ info: [[, , , color], message, [uid, uname, isOwner /*, isVip, isSvip*/]] }) => {
-          const danmaku: DPlayerDanmakuItem = {
-            type: 'right',
-            color: color.toString(16),
-            text: message
-          };
-          // console.log(danmaku);
-          dp.danmaku.draw(danmaku);
   })
 }
 const nextPlay = async () => {
