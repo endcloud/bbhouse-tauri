@@ -223,7 +223,7 @@ const initDp = (aid: string, cid: string, vList: any[], pic: string) => {
         // live.on('DANMU_MSG', ({ info }) => {
         //   console.log(info);
         // });
-        options.success()
+        options.success({})
       },
       send: function (options) {
         // live.send()
