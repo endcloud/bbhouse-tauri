@@ -6,7 +6,7 @@ import DPlayer, { DPlayerAPIBackend, DPlayerDanmakuItem, DPlayerDanmaku, DPlayer
 import { onBeforeUnmount, onMounted, ref } from "vue"
 import { useRoute } from "vue-router"
 import { useStore } from "../vuex"
-import { useAPlayer, useAuData, useDownload, useDPlayerReg, useNativeBB, useQnData, useTs2Time } from "../hooks"
+import { useAPlayer, useAuData, useDownload, useDPlayerReg, useNativeBB, useQnData, useTs2Time, sendLiveMsg} from "../hooks"
 import { appWindow, PhysicalSize } from "@tauri-apps/api/window"
 import { listen } from "@tauri-apps/api/event"
 import {confirm} from "@tauri-apps/api/dialog"
@@ -215,6 +215,7 @@ const initDp = (aid: string, cid: string, vList: any[], pic: string) => {
       read: function (options) {
         console.log('正在连接直播弹幕服务器', aid);
         const rid = aid.slice(4,)
+        const mid = store.state.login!.mid
         live = new KeepLiveWS(Number(rid))
         live.on('open', () => {
           console.log('已连接直播弹幕服务器', rid);
@@ -223,19 +224,20 @@ const initDp = (aid: string, cid: string, vList: any[], pic: string) => {
         // live.on('DANMU_MSG', ({ info }) => {
         //   console.log(info);
         // });
-        live.on('DANMU_MSG', async ({ info: [[, , , color], message, [uid, uname, isOwner /*, isVip, isSvip*/]] }) => {
+        live.on('DANMU_MSG', async ({ info: [[, , , color], message, [uid, uname]] }) => {
         const danmaku: DPlayerDanmakuItem = {
           type: 'right',
           color: color.toString(16),
-          text: message
+          text: uid === mid ? "" : message
         };
         // console.log(danmaku);
           dp.danmaku.draw(danmaku);
         })
-        options.success({})
+        options.success([])
       },
-      send: function (options) {
-        // live.send()
+      send: async function (options) {
+        console.log("send live msg", options.data);
+        await sendLiveMsg(aid, store.state.login!.cookie, options.data)
         options.success();
       },
     },

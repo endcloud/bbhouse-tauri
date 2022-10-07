@@ -144,7 +144,6 @@ export const moduleLive: Module<StateTypeLive, StateTypeRoot> = {
         async getLiveData({ commit, state, rootState }) {
             console.log("开始获取live数据")
             state.uids = []
-            console.log("cookie:", rootState.login!.cookie);
 
             const portalInfo: any = await fetch(state.initUrl, {
                 method: 'GET',

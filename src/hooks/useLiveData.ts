@@ -1,4 +1,4 @@
-import { fetch } from "@tauri-apps/api/http"
+import { Body, fetch } from "@tauri-apps/api/http"
 
 
 const getLiveUrl = async (cid: string, ac: string, cookie: string): Promise<any> => {
@@ -84,7 +84,7 @@ const getLiveUrlV2 = async (cid: string, ac: string, cookie: string, hls: boolea
         id: cqn,
         // url: `${hlsData.url_info.find((c: any) => !c.host.includes("mcdn"))??hlsData.url_info[0].host}${hlsData.base_url}${hlsData.url_info[0].extra}`,
         url: hls ? dUrl(hlsData) : dUrl(flvData),
-        type: hls ? "customHls": "customFlv",
+        type: hls ? "customHls" : "customFlv",
         name: qnDescArray.find((d: any) => d.qn === cqn).desc
     }]
 }
@@ -145,4 +145,34 @@ export const useLiveRes = async (playData: any, hls: boolean) => {
     //     name: "路线"+order
     // })))
     return hls ? ret.filter((r: any) => !r.url.includes("mcdn")) : ret
+}
+
+export const sendLiveMsg = async (aid: string, cookie: string, msg: any) => {
+    const rid = aid.slice(4,)
+    const n = cookie.indexOf("bili_jct=") + 9
+    const csrf = cookie.slice(n, n + 32)    
+    const sendUrl = "https://api.live.bilibili.com/msg/send"
+    await fetch(sendUrl, {
+        method: 'POST',
+        timeout: 10,
+        headers: {
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.4 Safari/605.1.15",
+            "Referer": "https://live.bilibili.com/" + rid,
+            "Origin": "https://live.bilibili.com",
+            "Host": "api.live.bilibili.com",
+            "Accept": "*/*",
+            "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8,zh-TW;q=0.7",
+            "Accept-Encoding": "gzip, deflate, br",
+            "Connection": "keep-alive",
+            "Cookie": cookie,
+        },
+        body: Body.form({
+            msg: msg.text,
+            color: String(msg.color),
+            fontsize: "25",
+            rnd: String(Date.now() / 1000),
+            roomid: rid,
+            csrf
+        })        
+    })
 }
