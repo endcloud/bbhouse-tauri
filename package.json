@@ -2,9 +2,9 @@
   "name": "bbhouse-app",
   "license": "GPL-3.0",
   "private": true,
-  "version": "1.1.0",
-  "code": "#22.110.06",
-  "time": 1664292724,
+  "version": "1.1.1",
+  "code": "#22.111.02",
+  "time": 1666273807,
   "type": "module",
   "scripts": {
     "tauri-dev": "yarn tauri dev",

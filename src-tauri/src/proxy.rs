@@ -15,8 +15,8 @@ fn req_crate(req: &mut Request<Body>) -> Result<()> {
 
     let uri = req.uri();
     let uri_string = match uri.query() {
-        Some(query_item) => format!("https://upos-sz-mirrorcoso1.bilivideo.com{}?{}", uri.path().replace(".mp4", ".m4s"), query_item),
-        None => format!("https://upos-sz-mirrorcoso1.bilivideo.com{}", uri.path().replace(".mp4", ".m4s"))
+        Some(query_item) => format!("https://upos-sz-mirrorcoso1.bilivideo.com{}?{}", uri.path(), query_item),
+        None => format!("https://upos-sz-mirrorcoso1.bilivideo.com{}", uri.path())
     };
 
     *req.uri_mut() = uri_string.parse().context("Parsing URI Error")?;

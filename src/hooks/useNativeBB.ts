@@ -136,19 +136,19 @@ export const useQnData = async (playData: any, hevc: boolean = false) => {
         return playData.durl.map(({url}: any) => ({
             id: playData.quality,
             url: useLocalUrl(url),
-            type: "customFlv",
+            type: "normal",
             name: qn.find(({value}: any) => value === playData.quality)!.name
         }))
     }
     // 优先使用 hevc 模式
     let videoList: any[] = playData.dash.video
         .filter(({codecs}: any) => codecs.includes(hevc ? "hev" : "avc"))
-        .map(({id, baseUrl}: any) => ({id: id, url: useLocalUrl(baseUrl).replaceAll(".m4s", ".mp4"), type: "normal"}))
+        .map(({id, baseUrl}: any) => ({id: id, url: useLocalUrl(baseUrl), type: "normal"}))
     // avc 回落
     if (videoList.length === 0) {
         videoList = playData.dash.video
             .filter(({codecs}: any) => codecs.includes("avc"))
-            .map(({id, baseUrl}: any) => ({id: id, url: useLocalUrl(baseUrl).replaceAll(".m4s", ".mp4"), type: "normal"}))
+            .map(({id, baseUrl}: any) => ({id: id, url: useLocalUrl(baseUrl), type: "normal"}))
     }
     // 清晰度处理, 实际获得的清晰度取决于用户, 因此需要进行处理
     if (videoList.length < qn.length) {

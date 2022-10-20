@@ -1,3 +1,6 @@
+## v1.1.1
+- `fix` Fixed a bug with Proxy via biliblli-api-change in Mac and Linux.
+
 ## v1.1.0
 - `add` live-module.
 - `add` space-page and navBar-super-uppers-feature.
