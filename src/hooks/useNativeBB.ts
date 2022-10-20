@@ -119,11 +119,12 @@ const usePlayUrl = async (aid: string, cookie: string, flv: boolean = false) => 
  * @param playData
  * @param hevc
  */
-export const useQnData = async (playData: any, hevc: boolean = false) => {
+export const useQnData = async (playData: any, hevc: boolean = false, hls: boolean = true) => {
     console.log("HEVC", hevc)
 
-    if (playData.hasOwnProperty("current_quality")) { // 直播
-        return await useLiveRes(playData)
+    if (playData.hasOwnProperty("current_quality")) {
+        //是直播
+        return await useLiveRes(playData, hls)
     }
 
     // 获得该视频拥有的清晰度列表, 固定返回

@@ -166,6 +166,7 @@ export const moduleLogin: Module<StateTypeLogin, StateTypeRoot> = {
                 state.local = true
                 state.expire = data.expire < Date.now()
                 state.expireDate = useTs2Time(data.expire / 1000)
+                state.mid = data.hasOwnProperty("token") ? data.token.mid : 0
                 return true
             } catch (e) {
                 console.log("本地读取失败", e)
