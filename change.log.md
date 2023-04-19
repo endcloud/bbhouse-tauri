@@ -1,3 +1,10 @@
+## v1.2.0
+- `add` add. new local server for danmaku.
+- `opt` Stripped the api calls embedded in the program segment
+- `opt` add some tip in live.
+- `fix` request problems in dynamicPage and videoPage.
+- `fix` request problems in star action for video.
+
 ## v1.1.1
 - `fix` Fixed a bug with Proxy via biliblli-api-change in Mac and Linux.
 

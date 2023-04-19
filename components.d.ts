@@ -55,6 +55,7 @@ declare module '@vue/runtime-core' {
     LiveArea: typeof import('./src/components/LiveArea.vue')['default']
     Login: typeof import('./src/components/Login.vue')['default']
     NavMenu: typeof import('./src/components/NavMenu.vue')['default']
+    News: typeof import('./src/components/News.vue')['default']
     OpenRepo: typeof import('./src/components/OpenRepo.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']

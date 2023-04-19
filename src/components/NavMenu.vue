@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import {ref} from "vue"
 import {useStore} from "../vuex"
+import {bilibili_api_list} from "../bili_api"
 
 const name = "NavMenu"
 
 const isCollapse = ref(true)
-const tempSrc = "https://i2.hdslb.com/bfs/face/d399d6f5cf7943a996ae96999ba3e6ae2a2988de.jpg@240w_240h_1c_1s.webp"
+const tempSrc = `https://${bilibili_api_list.assets.DianaAvatar}@240w_240h_1c_1s.webp`
 
 const handleOpen = (key: string, keyPath: string[]) => {
   console.log(key, keyPath)

@@ -31,7 +31,7 @@ onMounted(async () => {
     if (p.readLocal){
       await store.dispatch("saveLocal")
     }
-    await store.dispatch('getData')
+    await store.dispatch('initDynamic')
     await store.dispatch("readUppers")
   }
 })

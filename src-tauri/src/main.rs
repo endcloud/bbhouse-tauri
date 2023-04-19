@@ -4,16 +4,27 @@ windows_subsystem = "windows"
 )]
 
 use std::thread;
+
 use libloading::{Library, Symbol};
 
 mod proxy;
 mod menu;
+mod danmaku_server;
 
 #[tauri::command]
 async fn start_proxy() {
+    println!("rust proxy");
     thread::spawn(|| {
         proxy::main();
-    }).join().expect("Thread proxy");
+    });
+}
+
+#[tauri::command]
+async fn start_danmaku_server() {
+    println!("rust danmaku");
+    thread::spawn(|| {
+        danmaku_server::main();
+    });
 }
 
 fn load_dll() {
@@ -30,7 +41,7 @@ fn main() {
     let context = tauri::generate_context!();
     tauri::Builder::default()
         // .menu(menu::init(&context)) // ✅ 将菜单添加到所有窗口
-        .invoke_handler(tauri::generate_handler![start_proxy])
+        .invoke_handler(tauri::generate_handler![start_proxy, start_danmaku_server])
         .run(context)
         .expect("error while running tauri application");
 }

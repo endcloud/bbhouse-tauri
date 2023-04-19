@@ -1,6 +1,6 @@
 [package]
 name = "app"
-version = "1.1.1"
+version = "1.2.0"
 description = "A Bilibili Cross-Platform Desktop Client Powered By Tauri"
 authors = ["endcloud <endcloud@qq.com>"]
 license = "GPL-3.0"
@@ -21,10 +21,15 @@ tauri = { version = "1.1.1", features = ["clipboard-all", "dialog-all", "fs-all"
 tokio = { version = "1.20.1", features = ["full"] }
 hyper = { version = "0.14.20", features = ["full"] }
 hyper-rustls = "0.23.0"
-anyhow = "1.0.59"
+anyhow = "1.0.68"
 futures-util = "0.3.21"
 libloading = "0.7.3"
-
+actix-web = "4.1.0"
+actix-rt = "2.7.0"
+reqwest = { version = "0.11.4", features = ["blocking","json"] }
+scraper = "0.16.0"
+flate2 = "1.0.24"
+futures = "0.3.23"
 
 [features]
 # by default Tauri runs in production mode

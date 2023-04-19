@@ -1,17 +1,12 @@
 import {Module} from "vuex"
 import {StateTypeRoot} from "../store"
-import {Body, fetch} from "@tauri-apps/api/http"
 import {homeDir} from "@tauri-apps/api/path"
 import {readTextFile, writeTextFile} from "@tauri-apps/api/fs"
 import {message} from "@tauri-apps/api/dialog"
 import {useAES_ECB_DECRYPT, useAES_ECB_ENCRYPT, useSign, useTs2Time} from "../../hooks"
+import {getLoginURL, getLoginURLTV, postLogin, postLoginTV} from "../../bili_api"
 
 export interface StateTypeLogin {
-    loadingPic: string,
-    loginUrl: string,
-    checkUrl: string,
-    loginUrlTV: string,
-    checkUrlTV: string,
     qrcode: string,
     oauthKey: string,
     local: boolean,
@@ -24,11 +19,6 @@ export interface StateTypeLogin {
 
 export const moduleLogin: Module<StateTypeLogin, StateTypeRoot> = {
     state: () => ({
-        loadingPic: "https://s1.hdslb.com/bfs/static/mall-c/static/img/refresh.00100b5.gif",
-        loginUrl: "https://passport.bilibili.com/qrcode/getLoginUrl",
-        checkUrl: "https://passport.bilibili.com/qrcode/getLoginInfo",
-        loginUrlTV: "https://passport.bilibili.com/x/passport-tv-login/qrcode/auth_code",
-        checkUrlTV: "https://passport.bilibili.com/x/passport-tv-login/qrcode/poll",
         qrcode: "",
         oauthKey: "",
         local: false,
@@ -42,31 +32,14 @@ export const moduleLogin: Module<StateTypeLogin, StateTypeRoot> = {
     actions: {
         async startLogin({state}) {
             console.log("startLogin")
-            const resp: any = await fetch(state.loginUrl, {
-                method: 'GET',
-                timeout: 10,
-                headers: {
-                    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.149 Safari/537.36",
-                    "referer": "https://passport.bilibili.com/"
-                }
-            })
+            const resp = await getLoginURL()
+            
             state.qrcode = resp.data.data.url
             state.oauthKey = resp.data.data.oauthKey
             return true
         },
         async checkLogin({commit, state, dispatch}) {
-            const resp: any = await fetch(state.checkUrl, {
-                method: 'POST',
-                timeout: 10,
-                headers: {
-                    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.149 Safari/537.36",
-                    "referer": "https://passport.bilibili.com/",
-                    "content-type": "application/x-www-form-urlencoded"
-                },
-                body: Body.form({
-                    oauthKey: state.oauthKey
-                })
-            })
+            const resp = await postLogin({oauthKey: state.oauthKey})
             if (resp.data.code !== 0) {
                 console.log(resp.data)
                 switch (resp.data.data) {
@@ -101,15 +74,7 @@ export const moduleLogin: Module<StateTypeLogin, StateTypeRoot> = {
             }
             reqBody.sign = useSign(reqBody)
 
-            const resp: any = await fetch(state.loginUrlTV, {
-                method: 'POST',
-                timeout: 10,
-                headers: {
-                    "content-type": "application/x-www-form-urlencoded",
-                    "user-agent": "Bilibili UWP Client/3.2.1.0 (atelier39@outlook.com)"
-                },
-                body: Body.form(reqBody)
-            })
+            const resp = await getLoginURLTV(reqBody)
 
             console.log(resp.data)
 
@@ -130,15 +95,8 @@ export const moduleLogin: Module<StateTypeLogin, StateTypeRoot> = {
 
             reqBody.sign = useSign(reqBody)
 
-            const resp: any = await fetch(state.checkUrlTV, {
-                method: 'POST',
-                timeout: 10,
-                headers: {
-                    "user-agent": "Bilibili UWP Client/3.2.1.0 (atelier39@outlook.com)",
-                    "content-type": "application/x-www-form-urlencoded"
-                },
-                body: Body.form(reqBody)
-            })
+            const resp = await postLoginTV(reqBody)
+
             if (resp.data.code !== 0) {
                 console.log(resp.data)
                 await message(resp.data.message, {title: "登录失败", type: "error"})
@@ -147,7 +105,11 @@ export const moduleLogin: Module<StateTypeLogin, StateTypeRoot> = {
             state.cookie = resp.data.data.cookie_info.cookies.map((cookie: any) => `${cookie.name}=${cookie.value}`).join(";")
             state.token = resp.data.data.access_token
 
-            return await dispatch("writeCookie", {token: resp.data.data.token_info, cookie: state.cookie, expire: Date.now() + 1000 * 60 * 60 * 24 * 179})
+            return await dispatch("writeCookie", {
+                token: resp.data.data.token_info,
+                cookie: state.cookie,
+                expire: Date.now() + 1000 * 60 * 60 * 24 * 179
+            })
         },
         async writeCookie({commit, state, dispatch}, payload) {
             console.log("本地写入cookie数据", payload)

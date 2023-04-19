@@ -74,7 +74,7 @@ export const useTagIndex = (tid: number): string | undefined => {
     return undefined
 }
 
-export const generateTagList = (state: any) => {
+export const useTagListCollect = (state: any) => {
     const tagSet: any[] = []
 
     state.oriList.forEach((item: any) => {

@@ -1,6 +1,5 @@
 import {Module} from "vuex"
 import {StateTypeRoot} from "../store"
-import {fetch} from "@tauri-apps/api/http"
 
 export interface StateTypeComment {
     count: number,

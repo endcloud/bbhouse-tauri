@@ -1,13 +1,12 @@
 import {Module} from "vuex"
 import {StateTypeRoot} from "../store"
-import {fetch} from '@tauri-apps/api/http'
-import {generateTagList, tidRelation, useReVideoWindow, useVideoWindowState} from "../../hooks"
+import {tidRelation, useReVideoWindow, useTagListCollect, useVideoWindowState} from "../../hooks"
 import {confirm, message} from "@tauri-apps/api/dialog"
+import {getDynamicLimitVideo300} from "../../bili_api"
 
 
 export interface StateTypeDynamic {
     count: number,
-    initUrl: string,
     oriList: Array<any>,
     showList: Array<any>,
     tagList: string[],
@@ -27,7 +26,6 @@ export interface StateTypeDynamic {
 export const moduleDynamic: Module<StateTypeDynamic, StateTypeRoot> = {
     state: () => ({
         count: 0,
-        initUrl: "https://app.bilibili.com/x/feed/upper",
         oriList: [],
         showList: [],
         tagList: [],
@@ -85,28 +83,13 @@ export const moduleDynamic: Module<StateTypeDynamic, StateTypeRoot> = {
         }
     },
     actions: {
-        async getData({commit, state, rootState}) {
+        async initDynamic({commit, state, rootState}) {
             console.log("开始获取动态数据")
             const pages = [1, 2, 3]
 
             for (const page of pages) {
-                const res: any = await fetch(state.initUrl, {
-                    method: 'GET',
-                    timeout: 10,
-                    query: {
-                        access_key: rootState.login!.token,
-                        build: "5511400",
-                        mobi_app: "android",
-                        platform: "android",
-                        appkey: "75cd10da32ffff6d",
-                        ps: "440",
-                        pn: page.toString()
-                    },
-                    headers: {
-                        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.149 Safari/537.36",
-                        "referer": "https://www.bilibili.com/"
-                    }
-                })
+                const res = await getDynamicLimitVideo300(rootState.login!.token, page)
+
                 if (res.data.code !== 0) {
                     console.log(res.data)
                 } else {
@@ -134,7 +117,7 @@ export const moduleDynamic: Module<StateTypeDynamic, StateTypeRoot> = {
                     }
 
                     state.process = 100
-                    generateTagList(state)
+                    useTagListCollect(state)
                     state.showList = state.oriList
                     commit("changeSrc", {tag: state.tagList[0], index: 0})
                     state.loading = false

@@ -1,66 +1,15 @@
-import {fetch} from "@tauri-apps/api/http"
-
-
-const getLiveUrl = async (cid: string, ac: string, cookie: string): Promise<any> => {
-    const liveUrl = "https://api.live.bilibili.com/room/v1/Room/playUrl"
-    const liveRes: any = await fetch(liveUrl, {
-        method: 'GET',
-        timeout: 10,
-        headers: {
-            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.4 Safari/605.1.15",
-            "Referer": `https://live.bilibili.com/${cid}`,
-            "Origin": "https://www.bilibili.com",
-            "Host": "api.bilibili.com",
-            "Accept": "*/*",
-            "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8,zh-TW;q=0.7",
-            "Accept-Encoding": "gzip, deflate, br",
-            "Connection": "keep-alive",
-            "Cookie": cookie,
-        },
-        query: {
-            cid: cid,
-            platform: "h5",
-            qn: ac,
-        }
-    })
-    console.log("getLiveUrl", liveRes)
-
-    const cqn = liveRes.data.data.current_qn
-    const cqd = liveRes.data.data.quality_description.filter((qd: any) => qd.qn === cqn)
-    return liveRes.data.data.durl.map(({url, order}: any) => ({
-        id: cqn,
-        url: url,
-        type: "customHls",
-        name: cqd[0].desc + "：路线" + order
-    }))
-}
+import {getLiveMeta, getLiveRoomInfo} from "../bili_api"
 
 const getLiveUrlV2 = async (cid: string, ac: string, cookie: string): Promise<any> => {
-    const liveUrl = "https://api.live.bilibili.com/xlive/web-room/v2/index/getRoomPlayInfo"
-    const liveRes: any = await fetch(liveUrl, {
-        method: 'GET',
-        timeout: 10,
-        headers: {
-            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.4 Safari/605.1.15",
-            "Referer": `https://live.bilibili.com/${cid}`,
-            "Origin": "https://www.bilibili.com",
-            "Host": "api.bilibili.com",
-            "Accept": "*/*",
-            "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8,zh-TW;q=0.7",
-            "Accept-Encoding": "gzip, deflate, br",
-            "Connection": "keep-alive",
-            "Cookie": cookie,
-        },
-        query: {
-            room_id: cid,
-            no_playurl: "0",
-            mask: "1",
-            qn: ac,
-            platform: "web",
-            protocol: "0,1",
-            format: "0,2",
-            codec: "0,2",
-        }
+    const liveRes = await getLiveRoomInfo(cookie, cid, {
+        room_id: cid,
+        no_playurl: "0",
+        mask: "1",
+        qn: ac,
+        platform: "web",
+        protocol: "0,1",
+        format: "0,2",
+        codec: "0,2",
     })
     console.log("getLiveUrlV2", liveRes)
 
@@ -77,7 +26,7 @@ const getLiveUrlV2 = async (cid: string, ac: string, cookie: string): Promise<an
         .codec.find((c: any) => c.codec_name.includes("avc"))
     const cqn = hlsData.current_qn
 
-    const dUrl = (data: any): string => `${(data.url_info.find((c: any) => !c.host.includes("mcdn"))??data.url_info[0]).host}${data.base_url}${data.url_info[0].extra}`
+    const dUrl = (data: any): string => `${(data.url_info.find((c: any) => !c.host.includes("mcdn")) ?? data.url_info[0]).host}${data.base_url}${data.url_info[0].extra}`
 
     return [{
         id: cqn,
@@ -90,27 +39,12 @@ const getLiveUrlV2 = async (cid: string, ac: string, cookie: string): Promise<an
 
 export const useLiveMeta = async (aid: string, cookie: string) => {
     const rid = aid.slice(4,)
-    const liveUrl = "https://api.live.bilibili.com/room/v1/Room/playUrl"
-    const liveRes: any = await fetch(liveUrl, {
-        method: 'GET',
-        timeout: 10,
-        headers: {
-            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.4 Safari/605.1.15",
-            "Referer": "https://live.bilibili.com/",
-            "Origin": "https://www.bilibili.com",
-            "Host": "api.bilibili.com",
-            "Accept": "*/*",
-            "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8,zh-TW;q=0.7",
-            "Accept-Encoding": "gzip, deflate, br",
-            "Connection": "keep-alive",
-            "Cookie": cookie,
-        },
-        query: {
-            cid: rid,
-            platform: "h5",
-            quality: "",
-            qn: "",
-        }
+
+    const liveRes = await getLiveMeta(cookie, {
+        cid: rid,
+        platform: "h5",
+        quality: "",
+        qn: "",
     })
     liveRes.data.data.cid = rid
     liveRes.data.data.flvMode = true

@@ -1,11 +1,11 @@
 import {Module} from "vuex"
 import {StateTypeRoot} from "../store"
-import {fetch} from "@tauri-apps/api/http"
 import {writeText} from '@tauri-apps/api/clipboard'
 import {readTextFile, writeTextFile} from "@tauri-apps/api/fs"
 import {useCombine, useTipMessageShort} from "../../hooks"
 import {moduleComment, StateTypeComment} from "./comment"
 import {StateTypeInteraction, moduleInteraction} from "./interaction"
+import {getComment} from "../../bili_api"
 
 export interface StateTypeVideo {
     count: number,
@@ -17,6 +17,7 @@ export interface StateTypeVideo {
     commentPageIndex: number,
     commentPageData: { num: number, size: number, count: number, acount: number },
     windowSize: { width: number, height: number },
+    isLive: boolean
     comment?: StateTypeComment,
     interaction?: StateTypeInteraction
 }
@@ -65,23 +66,13 @@ export const moduleVideo: Module<StateTypeVideo, StateTypeRoot> = {
 
             state.commentPageIndex = payload ? payload : 1
 
-            const resp: any = await fetch("https://api.bilibili.com/x/v2/reply", {
-                method: 'GET',
-                timeout: 10,
-                headers: {
-                    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.4 Safari/605.1.15",
-                    "referer": "https://www.bilibili.com/",
-                    "accept": "application/json",
-                    "cookie": rootState.login!.cookie
-                },
-                query: {
-                    type: "1",
-                    oid: state.playList[state.playIndex].aid,
-                    sort: "1",
-                    nohot: "0",
-                    ps: "30",
-                    pn: state.commentPageIndex.toString(),
-                }
+            const resp = await getComment(rootState.login!.cookie, {
+                type: "1",
+                oid: state.playList[state.playIndex].aid,
+                sort: "1",
+                nohot: "0",
+                ps: "30",
+                pn: state.commentPageIndex.toString(),
             })
 
             console.log(resp.data.data)
@@ -90,7 +81,8 @@ export const moduleVideo: Module<StateTypeVideo, StateTypeRoot> = {
         },
         async copyTimeUrl({state}, payload: number) {
             const video = state.playList[state.playIndex]
-            const url = `https://www.bilibili.com/video/av${video.aid}?t=${payload}`
+            const url = isNaN(Number(video.aid)) ? `https://live.bilibili.com/${video.aid.slice(4)}` :
+                `https://www.bilibili.com/video/av${video.aid}?t=${payload}`
             await writeText(`${state.title}  ${url}`)
             useTipMessageShort("已复制到剪贴板")
         },

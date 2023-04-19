@@ -1,36 +1,8 @@
-import {fetch} from "@tauri-apps/api/http"
 import {useLocalUrl} from "./useProxy"
 import {message} from "@tauri-apps/api/dialog"
 import {useLiveMeta, useLiveRes} from "./useLiveData"
+import {getVideoBaseInfo, getVideoPlayUrl} from "../bili_api"
 
-/**
- * 获取视频基础信息信息和cid
- * @param aid
- * @param cookie
- */
-const getView = async (aid: string, cookie: string): Promise<any> => {
-    const viewUrl = "https://api.bilibili.com/x/web-interface/view"
-    const res: any = await fetch(viewUrl, {
-        method: 'GET',
-        timeout: 10,
-        headers: {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.149 Safari/537.36",
-            "Referer": "https://www.bilibili.com/video/av" + aid,
-            "Origin": "https://www.bilibili.com",
-            "Host": "api.bilibili.com",
-            "Accept": "*/*",
-            "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8,zh-TW;q=0.7",
-            "Accept-Encoding": "gzip, deflate, br",
-            "Connection": "keep-alive",
-            "Cookie": cookie,
-        },
-        query: {
-            aid: aid,
-        }
-    })
-    console.log("getView", res.data.data)
-    return res.data.data
-}
 /**
  * 获取视频播放地址
  * @param aid
@@ -39,11 +11,14 @@ const getView = async (aid: string, cookie: string): Promise<any> => {
  * @param qn
  */
 export const useNativeBB = async (aid: string, cookie: string, flv: boolean = false, qn: number = 120): Promise<any> => {
-    if (isNaN(Number(aid))) { // 直播
+    if (isNaN(Number(aid))) { // 判断是否是直播
         return await useLiveMeta(aid, cookie)
     }
 
-    const baseData = await getView(aid, cookie) // 在网络正常的情况下, 无论视频状态, 这里应该是一个返回对象
+    const resp = await getVideoBaseInfo(cookie, aid) // 在网络正常的情况下, 无论视频状态, 这里应该是一个返回对象
+    console.log("getView", resp.data.data)
+    const baseData = resp.data.data
+
     if (flv && qn > 120) qn = 120 // flv 模式下, qn 最高只能是 120，超过会回落到 1080P 的80，接口限制
 
     if (!baseData || !baseData.hasOwnProperty("pages")) {
@@ -52,40 +27,25 @@ export const useNativeBB = async (aid: string, cookie: string, flv: boolean = fa
     }
 
     const cid = baseData.pages[0].cid.toString()
+    const query = flv ?
+        {
+            cid: cid,
+            bvid: baseData.bvid,
+            qn: qn.toString(),
+            fourk: "1",
+        } :
+        {
+            cid: cid,
+            bvid: baseData.bvid,
+            qn: "127",
+            fourk: "1",
+            otype: "json",
+            fnever: "0",
+            type: "",
+            fnval: "4048"
+        }
 
-    const playUrl = "https://api.bilibili.com/x/player/playurl"
-    const res: any = await fetch(playUrl, {
-        method: 'GET',
-        timeout: 10,
-        headers: {
-            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.4 Safari/605.1.15",
-            "Referer": "https://www.bilibili.com/video/av" + aid,
-            "Origin": "https://www.bilibili.com",
-            "Host": "api.bilibili.com",
-            "Accept": "*/*",
-            "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8,zh-TW;q=0.7",
-            "Accept-Encoding": "gzip, deflate, br",
-            "Connection": "keep-alive",
-            "Cookie": cookie,
-        },
-        query: flv ?
-            {
-                cid: cid,
-                bvid: baseData.bvid,
-                qn: qn.toString(),
-                fourk: "1",
-            } :
-            {
-                cid: cid,
-                bvid: baseData.bvid,
-                qn: "127",
-                fourk: "1",
-                otype: "json",
-                fnever: "0",
-                type: "",
-                fnval: "4048"
-            }
-    })
+    const res = await  getVideoPlayUrl(cookie, aid, query)
     console.log("useNativeBB", res.data.data)
     res.data.data.cid = cid
     res.data.data.baseData = baseData

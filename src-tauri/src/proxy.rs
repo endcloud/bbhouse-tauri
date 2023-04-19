@@ -10,7 +10,7 @@ fn req_crate(req: &mut Request<Body>) -> Result<()> {
         req.headers_mut().remove(*key);
     }
     req.headers_mut().insert("host", "upos-sz-mirrorcoso1.bilivideo.com".parse()?);
-    req.headers_mut().insert("referer", "https://www.bilibili.com".parse()?);
+    req.headers_mut().insert("referer", "https://www.bilibili.com/".parse()?);
     req.headers_mut().insert("user-agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.4 Safari/605.1.15".parse()?);
 
     let uri = req.uri();

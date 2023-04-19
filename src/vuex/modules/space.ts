@@ -1,14 +1,13 @@
 import {Module} from "vuex"
 import {StateTypeRoot} from "../store"
-import {fetch} from "@tauri-apps/api/http"
 import {useReVideoWindow, useVideoWindowState} from "../../hooks"
 import {confirm, message} from "@tauri-apps/api/dialog"
+import {getSpaceInfo, bilibili_api_list} from "../../bili_api"
 
 export interface StateTypeSpace {
-    url: string,
     name: string | null,
-    mid: number,
     avatar: string,
+    mid: number,
     count: number,
     countAll: number,
     order: "pubdate" | "click" | "stow",
@@ -24,10 +23,9 @@ export interface StateTypeSpace {
 
 export const moduleSpace: Module<StateTypeSpace, StateTypeRoot> = {
     state: () => ({
-        url: "https://api.bilibili.com/x/space/arc/search",
         name: "蒙古上单",
+        avatar: bilibili_api_list.assets.DianaAvatar,
         mid: 0,
-        avatar: "i2.hdslb.com/bfs/face/d399d6f5cf7943a996ae96999ba3e6ae2a2988de.jpg",
         count: 0,
         countAll: 0,
         order: "pubdate",
@@ -87,24 +85,16 @@ export const moduleSpace: Module<StateTypeSpace, StateTypeRoot> = {
             state.pn = 1
             state.keyword = ""
 
-            const resp: any = await fetch(state.url, {
-                method: "GET",
-                timeout: 10,
-                headers: {
-                    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.4 Safari/605.1.15",
-                    "Referer": "https://www.bilibili.com/",
-                    "Cookie": rootState.login!.cookie,
-                },
-                query: {
-                    mid: state.mid.toString(),
-                    order: state.order,
-                    tid: state.tid.toString(),
-                    ps: state.ps.toString(),
-                    pn: state.pn.toString(),
-                    keyword: state.keyword,
-                },
+            const resp = await getSpaceInfo(rootState.login!.cookie, {
+                mid: state.mid.toString(),
+                order: state.order,
+                tid: state.tid.toString(),
+                ps: state.ps.toString(),
+                pn: state.pn.toString(),
+                keyword: state.keyword,
             })
-            if (resp.data.code != 0) {
+
+            if (resp.data.code !== 0) {
                 console.log(resp.data)
                 return false
             }
@@ -128,23 +118,16 @@ export const moduleSpace: Module<StateTypeSpace, StateTypeRoot> = {
         },
         async refreshSpace({rootState, state, commit}) {
             state.loading = true
-            const resp: any = await fetch(state.url, {
-                method: "GET",
-                timeout: 10,
-                headers: {
-                    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.4 Safari/605.1.15",
-                    "Referer": "https://www.bilibili.com/",
-                    "Cookie": rootState.login!.cookie,
-                },
-                query: {
-                    mid: state.mid.toString(),
-                    order: state.order,
-                    tid: state.tid.toString(),
-                    ps: state.ps.toString(),
-                    pn: state.pn.toString(),
-                    keyword: state.keyword,
-                },
+
+            const resp = await getSpaceInfo(rootState.login!.cookie, {
+                mid: state.mid.toString(),
+                order: state.order,
+                tid: state.tid.toString(),
+                ps: state.ps.toString(),
+                pn: state.pn.toString(),
+                keyword: state.keyword,
             })
+
             commit("setVideoList", resp.data.data.list.vlist)
         },
         async watchAllInSpace({state, rootState}) {
